@@ -1,0 +1,12 @@
+# 官方 clone(各自有 .git,公开仓库,不纳入)
+AI-Scientist/
+AI-Scientist-v2/
+AI-Scientist-ICLR2025-Workshop-Experiment/
+# 版权 Nature 论文,不外传
+s41586-026-10265-5.pdf
+*.pdf.download
+# 本机环境/缓存
+.venv-ideation/
+__pycache__/
+*.pyc
+.DS_Store

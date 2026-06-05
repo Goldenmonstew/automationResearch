@@ -1,0 +1,882 @@
+diff --git a/ai_scientist/llm.py b/ai_scientist/llm.py
+index b79c6c6..3629bc6 100644
+--- a/ai_scientist/llm.py
++++ b/ai_scientist/llm.py
+@@ -8,12 +8,43 @@ import anthropic
+ import backoff
+ import openai
+ 
+-MAX_NUM_TOKENS = 4096
++MAX_NUM_TOKENS = 16384  # bumped from 4096: full-paper LaTeX writeups + reasoning models (gpt-5.x) need headroom
++
++
++def _route_model(model):
++    """Map hardcoded / unavailable model names to router-available ones (gpt-5.5 / gpt-4o).
++
++    The codebase hardcodes many dated/legacy model names (gpt-4o-2024-*, o1-*, o3-mini-*,
++    claude-3-5-*) that our self-hosted router does not expose. Normalize them here so every
++    call site routes to an available model without touching each hardcoded string.
++    """
++    if not model:
++        return model
++    if "claude" in model:
++        return "gpt-5.5"
++    if model.startswith("o1") or model.startswith("o3"):
++        return "gpt-5.5"
++    if model.startswith("gpt-4o"):  # gpt-4o-2024-*, gpt-4o-mini-*
++        return "gpt-4o"
++    return model
+ 
+ AVAILABLE_LLMS = [
+     "claude-3-5-sonnet-20240620",
+     "claude-3-5-sonnet-20241022",
+     # OpenAI models
++    "gpt-5.5",
++    "gpt-5.4",
++    "gpt-5",
++    # Self-hosted router (OpenAI-compatible) models — argparse choices for
++    # the ideation/CLI entry points; create_client routes them via OPENAI_BASE_URL
++    "gpt-5-chat",
++    "gpt-5.2-chat",
++    "gemini-3.5-flash",
++    "gemini-3.1-pro",
++    "deepseek-v3.2",
++    "glm-5.1",
++    "minimax-m2.5",
++    "kimi-k2.5",
+     "gpt-4o-mini",
+     "gpt-4o-mini-2024-07-18",
+     "gpt-4o",
+@@ -94,6 +125,7 @@ def get_batch_responses_from_llm(
+     temperature=0.7,
+     n_responses=1,
+ ) -> tuple[list[str], list[list[dict[str, Any]]]]:
++    model = _route_model(model)
+     msg = prompt
+     if msg_history is None:
+         msg_history = []
+@@ -273,6 +305,7 @@ def get_response_from_llm(
+     msg_history=None,
+     temperature=0.7,
+ ) -> tuple[str, list[dict[str, Any]]]:
++    model = _route_model(model)
+     msg = prompt
+     if msg_history is None:
+         msg_history = []
+@@ -420,7 +453,12 @@ def get_response_from_llm(
+         )
+         content = response.choices[0].message.content
+         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
+-    elif 'gemini' in model:
++    else:
++        # Any other model (gemini, deepseek-v3.2, glm-5.1, kimi-k2.5,
++        # minimax-m2.5, ...) is served by the OpenAI-compatible router. Use a
++        # generic chat completion and guard content against None (some router
++        # models return a null message content on finish/length edge cases,
++        # which would otherwise crash downstream string ops).
+         new_msg_history = msg_history + [{"role": "user", "content": msg}]
+         response = client.chat.completions.create(
+             model=model,
+@@ -432,10 +470,8 @@ def get_response_from_llm(
+             max_tokens=MAX_NUM_TOKENS,
+             n=1,
+         )
+-        content = response.choices[0].message.content
++        content = response.choices[0].message.content or ""
+         new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
+-    else:
+-        raise ValueError(f"Model {model} not supported.")
+ 
+     if print_debug:
+         print()
+@@ -478,6 +514,7 @@ def extract_json_between_markers(llm_output: str) -> dict | None:
+ 
+ 
+ def create_client(model) -> tuple[Any, str]:
++    model = _route_model(model)
+     if model.startswith("claude-"):
+         print(f"Using Anthropic API with model {model}.")
+         return anthropic.Anthropic(), model
+@@ -532,13 +569,14 @@ def create_client(model) -> tuple[Any, str]:
+             "meta-llama/llama-3.1-405b-instruct",
+         )
+     elif 'gemini' in model:
+-        print(f"Using OpenAI API with {model}.")
+-        return (
+-            openai.OpenAI(
+-                api_key=os.environ["GEMINI_API_KEY"],
+-                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+-            ),
+-            model,
+-        )
++        # Route gemini through the OpenAI-compatible router (OPENAI_BASE_URL),
++        # NOT Google's native endpoint (which would need GEMINI_API_KEY).
++        print(f"Using OpenAI-compatible router with model {model}.")
++        return openai.OpenAI(), model
+     else:
+-        raise ValueError(f"Model {model} not supported.")
++        # The self-hosted router serves many OpenAI-compatible models
++        # (deepseek-v3.2, glm-5.1, kimi-k2.5, minimax-m2.5, ...). Route anything
++        # otherwise-unrecognized through the router (OPENAI_BASE_URL +
++        # OPENAI_API_KEY) instead of hard-failing.
++        print(f"Using OpenAI-compatible router with model {model}.")
++        return openai.OpenAI(), model
+diff --git a/ai_scientist/perform_icbinb_writeup.py b/ai_scientist/perform_icbinb_writeup.py
+index 297ef65..0c8a030 100644
+--- a/ai_scientist/perform_icbinb_writeup.py
++++ b/ai_scientist/perform_icbinb_writeup.py
+@@ -19,7 +19,7 @@ from ai_scientist.llm import (
+ 
+ from ai_scientist.utils.token_tracker import track_token_usage
+ 
+-from ai_scientist.tools.semantic_scholar import search_for_papers
++from ai_scientist.tools.openalex_search import search_for_papers  # OpenAlex: free, no key, reachable (S2 has no key/429, arxiv unreachable)
+ 
+ from ai_scientist.perform_vlm_review import (
+     generate_vlm_img_review,
+@@ -854,6 +854,26 @@ def gather_citations(base_folder, num_cite_rounds=20, small_model="gpt-4o-2024-0
+         return citations_text if citations_text else None
+ 
+ 
++def _extract_latex_block(text):
++    """Extract a full LaTeX document from an LLM response, robust to reasoning
++    models (e.g. gpt-5.x) that omit the ```latex fence. Tries, in order: a
++    ```latex ... ``` block, a generic fenced block containing \\documentclass,
++    then a raw \\documentclass ... \\end{document} body. Returns the stripped
++    LaTeX string, or None if nothing usable is found."""
++    if not text:
++        return None
++    m = re.search(r"```latex(.*?)```", text, re.DOTALL)
++    if m:
++        return m.group(1).strip()
++    m = re.search(r"```(?:tex)?\s*(\\documentclass.*?)```", text, re.DOTALL)
++    if m:
++        return m.group(1).strip()
++    m = re.search(r"(\\documentclass.*?\\end\{document\})", text, re.DOTALL)
++    if m:
++        return m.group(1).strip()
++    return None
++
++
+ def perform_writeup(
+     base_folder,
+     citations_text=None,
+@@ -949,8 +969,17 @@ def perform_writeup(
+                 f.write(content)
+ 
+         # Generate VLM-based descriptions
++        # Create the VLM client OUTSIDE the try block so vlm_client/vlm_model are
++        # ALWAYS defined for the reflection loop below (which uses them
++        # unconditionally). Previously this was inside the try; any failure here
++        # left vlm_client undefined -> UnboundLocalError later.
++        # VLM figure-reflection is an AUXILIARY vision step, not the model under
++        # test. Pin it to gpt-4o (vision-capable, on the router) so that the L0
++        # benchmark only varies the WRITING model (small_model/big_model). Models
++        # like deepseek/glm have no vision (not in AVAILABLE_VLMS) and gemini's
++        # native VLM path needs GEMINI_API_KEY -> hardcoding gpt-4o avoids both.
++        vlm_client, vlm_model = create_vlm_client("gpt-4o")
+         try:
+-            vlm_client, vlm_model = create_vlm_client(small_model)
+             desc_map = {}
+             for pf in plot_names:
+                 ppath = osp.join(figures_dir, pf)
+@@ -1002,10 +1031,11 @@ def perform_writeup(
+             print_debug=False,
+         )
+ 
+-        latex_code_match = re.search(r"```latex(.*?)```", response, re.DOTALL)
+-        if not latex_code_match:
++        updated_latex_code = _extract_latex_block(response)
++        if updated_latex_code is None:
++            print("Could not extract LaTeX from initial writeup response; "
++                  "aborting writeup (model likely returned no usable LaTeX).")
+             return False
+-        updated_latex_code = latex_code_match.group(1).strip()
+         with open(writeup_file, "w") as f:
+             f.write(updated_latex_code)
+ 
+@@ -1092,11 +1122,8 @@ Ensure proper citation usage:
+             )
+ 
+             # 2nd run:
+-            reflection_code_match = re.search(
+-                r"```latex(.*?)```", reflection_response, re.DOTALL
+-            )
+-            if reflection_code_match:
+-                reflected_latex_code = reflection_code_match.group(1).strip()
++            reflected_latex_code = _extract_latex_block(reflection_response)
++            if reflected_latex_code is not None:
+                 if reflected_latex_code != current_latex:
+                     final_text = reflected_latex_code
+                     cleanup_map = {
+@@ -1159,11 +1186,8 @@ If you believe you are done with reflection, simply say: "I am done"."""
+                 )
+                 break
+ 
+-            reflection_code_match = re.search(
+-                r"```latex(.*?)```", reflection_response, re.DOTALL
+-            )
+-            if reflection_code_match:
+-                reflected_latex_code = reflection_code_match.group(1).strip()
++            reflected_latex_code = _extract_latex_block(reflection_response)
++            if reflected_latex_code is not None:
+                 if reflected_latex_code != current_latex:
+                     final_text = reflected_latex_code
+                     cleanup_map = {
+@@ -1211,11 +1235,8 @@ USE MINIMAL EDITS TO OPTIMIZE THE PAGE LIMIT USAGE."""
+ 
+         print(f"reflection step {i+1}")
+ 
+-        reflection_code_match = re.search(
+-            r"```latex(.*?)```", reflection_response, re.DOTALL
+-        )
+-        if reflection_code_match:
+-            reflected_latex_code = reflection_code_match.group(1).strip()
++        reflected_latex_code = _extract_latex_block(reflection_response)
++        if reflected_latex_code is not None:
+             if reflected_latex_code != current_latex:
+                 final_text = reflected_latex_code
+                 cleanup_map = {
+diff --git a/ai_scientist/perform_ideation_temp_free.py b/ai_scientist/perform_ideation_temp_free.py
+index 467530d..c44c9b5 100644
+--- a/ai_scientist/perform_ideation_temp_free.py
++++ b/ai_scientist/perform_ideation_temp_free.py
+@@ -180,68 +180,63 @@ def generate_temp_free_idea(
+ 
+                 # Parse the LLM's response
+                 try:
+-                    # Use regular expressions to extract the components
+-                    action_pattern = r"ACTION:\s*(.*?)\s*ARGUMENTS:"
+-                    arguments_pattern = r"ARGUMENTS:\s*(.*?)(?:$|\nTHOUGHT:|\n$)"
+-
+-                    action_match = re.search(
+-                        action_pattern, response_text, re.DOTALL | re.IGNORECASE
++                    # Robust parsing: reasoning models (e.g. gpt-5.x) often emit the
++                    # whole ReAct trajectory (several ACTION blocks ending in
++                    # FinalizeIdea) in one response, and may append extra text after
++                    # the JSON. Find all ACTION blocks, prefer FinalizeIdea, and decode
++                    # the first complete JSON object after the chosen action.
++                    action_iter = list(
++                        re.finditer(r"ACTION:\s*(\w+)", response_text, re.IGNORECASE)
+                     )
+-                    arguments_match = re.search(
+-                        arguments_pattern, response_text, re.DOTALL | re.IGNORECASE
++                    if not action_iter:
++                        raise ValueError("Failed to parse the LLM response (no ACTION).")
++
++                    def _json_after(pos: int):
++                        brace = response_text.find("{", pos)
++                        if brace == -1:
++                            raise ValueError("No JSON object found after ACTION.")
++                        obj, _ = json.JSONDecoder().raw_decode(response_text[brace:])
++                        return obj
++
++                    finalize_match = next(
++                        (
++                            m
++                            for m in action_iter
++                            if m.group(1).strip().lower() == "finalizeidea"
++                        ),
++                        None,
+                     )
+ 
+-                    if not all([action_match, arguments_match]):
+-                        raise ValueError("Failed to parse the LLM response.")
+-
+-                    action = action_match.group(1).strip()
+-                    arguments_text = arguments_match.group(1).strip()
+-                    print(f"Action: {action}")
+-                    print(f"Arguments: {arguments_text}")
+-
+-                    # If arguments are wrapped in ```json blocks, extract the content
+-                    if arguments_text.startswith("```json"):
+-                        arguments_text = re.search(
+-                            r"```json\s*(.*?)\s*```", arguments_text, re.DOTALL
+-                        ).group(1)
+-
+-                    # Process the action and arguments
+-                    if action in tools_dict:
+-                        # It's a tool we have defined
+-                        tool = tools_dict[action]
+-                        # Parse arguments
+-                        try:
+-                            arguments_json = json.loads(arguments_text)
+-                        except json.JSONDecodeError:
+-                            raise ValueError(f"Invalid arguments JSON for {action}.")
+-
+-                        # Use the tool
+-                        try:
+-                            # Assuming the arguments match the parameters of the tool
+-                            result = tool.use_tool(**arguments_json)
+-                            last_tool_results = result
+-                        except Exception as e:
+-                            last_tool_results = f"Error using tool {action}: {str(e)}"
+-                    elif action == "FinalizeIdea":
+-                        # Parse arguments
+-                        try:
+-                            arguments_json = json.loads(arguments_text)
+-                            idea = arguments_json.get("idea")
+-                            if not idea:
+-                                raise ValueError("Missing 'idea' in arguments.")
+-
+-                            # Append the idea to the archive
+-                            idea_str_archive.append(json.dumps(idea))
+-                            print(f"Proposal finalized: {idea}")
+-                            idea_finalized = True
+-                            break
+-                        except json.JSONDecodeError:
+-                            raise ValueError("Invalid arguments JSON for FinalizeIdea.")
++                    if finalize_match is not None:
++                        # Reasoning model already produced a final idea -> take it.
++                        print("Action: FinalizeIdea")
++                        arguments_json = _json_after(finalize_match.end())
++                        idea = arguments_json.get("idea")
++                        if not idea:
++                            raise ValueError("Missing 'idea' in arguments.")
++                        idea_str_archive.append(json.dumps(idea))
++                        print(f"Proposal finalized: {idea}")
++                        idea_finalized = True
++                        break
+                     else:
+-                        print(
+-                            "Invalid action. Please specify one of the available tools."
+-                        )
+-                        print(f"Available actions are: {tool_names_str}")
++                        # Otherwise execute the first requested action (a tool call).
++                        first = action_iter[0]
++                        action = first.group(1).strip()
++                        arguments_json = _json_after(first.end())
++                        print(f"Action: {action}")
++                        print(f"Arguments: {arguments_json}")
++                        if action in tools_dict:
++                            tool = tools_dict[action]
++                            try:
++                                result = tool.use_tool(**arguments_json)
++                                last_tool_results = result
++                            except Exception as e:
++                                last_tool_results = f"Error using tool {action}: {str(e)}"
++                        else:
++                            print(
++                                "Invalid action. Please specify one of the available tools."
++                            )
++                            print(f"Available actions are: {tool_names_str}")
+                 except Exception as e:
+                     print(
+                         f"Failed to parse LLM response. Response text:\n{response_text}"
+diff --git a/ai_scientist/tools/openalex_search.py b/ai_scientist/tools/openalex_search.py
+new file mode 100644
+index 0000000..d2b6fc5
+--- /dev/null
++++ b/ai_scientist/tools/openalex_search.py
+@@ -0,0 +1,112 @@
++"""OpenAlex-backed drop-in replacement for tools.semantic_scholar.search_for_papers.
++
++Why: the self-hosted setup has no Semantic Scholar API key (S2 returns 429 and
++citations come out as "(?)"), and export.arxiv.org is not reachable from the GPU
++server. OpenAlex (https://api.openalex.org) is free, needs no key, IS reachable,
++and returns rich metadata. We reshape its response into the EXACT dict structure
++the v2 writeup expects: each paper has title/authors/venue/year/abstract plus
++citationStyles.bibtex (which OpenAlex does not provide, so we synthesize it).
++"""
++import os
++import re
++import time
++import warnings
++from typing import Dict, List, Optional, Union
++
++import backoff
++import requests
++
++OPENALEX_BASE = "https://api.openalex.org/works"
++# OpenAlex "polite pool" — a contact email yields higher, more stable rate limits.
++MAILTO = os.getenv("OPENALEX_MAILTO", "ai-scientist@example.com")
++
++
++def _reconstruct_abstract(inv_index: Optional[dict]) -> str:
++    """OpenAlex returns abstract as an inverted index {word: [positions]}."""
++    if not inv_index:
++        return ""
++    positions = {}
++    for word, idxs in inv_index.items():
++        for i in idxs:
++            positions[i] = word
++    if not positions:
++        return ""
++    text = " ".join(positions[i] for i in range(max(positions) + 1) if i in positions)
++    return text[:1500]  # keep prompt context bounded
++
++
++def _clean(s: str) -> str:
++    return (s or "").replace("{", "").replace("}", "").strip()
++
++
++def _make_bibtex(work: dict, names: List[str], venue: str) -> str:
++    year = work.get("publication_year") or ""
++    title = _clean(work.get("title") or "")
++    doi = (work.get("doi") or "").replace("https://doi.org/", "")
++    author_field = " and ".join(names) if names else "Unknown"
++    first_last = names[0].split()[-1] if names else "anon"
++    first_word = re.sub(r"[^A-Za-z]", "", (title.split()[0] if title else "paper")) or "ref"
++    key = re.sub(r"[^A-Za-z0-9]", "", f"{first_last}{year}{first_word}").lower() or "ref"
++    # entry type: inproceedings if the venue looks like a conference/workshop
++    is_conf = bool(re.search(r"conference|workshop|proceedings|symposium|meeting", venue, re.I))
++    etype = "inproceedings" if is_conf else "article"
++    field = "booktitle" if is_conf else "journal"
++    lines = [f"@{etype}{{{key},"]
++    lines.append(f" title = {{{title}}},")
++    lines.append(f" author = {{{author_field}}},")
++    if venue:
++        lines.append(f" {field} = {{{_clean(venue)}}},")
++    if year:
++        lines.append(f" year = {{{year}}},")
++    if doi:
++        lines.append(f" doi = {{{doi}}},")
++    lines.append("}")
++    return "\n".join(lines)
++
++
++@backoff.on_exception(
++    backoff.expo, requests.exceptions.RequestException, max_tries=5
++)
++def search_for_papers(query, result_limit=10) -> Union[None, List[Dict]]:
++    if not query:
++        return None
++    rsp = requests.get(
++        OPENALEX_BASE,
++        params={
++            "search": query,
++            "per-page": result_limit,
++            "mailto": MAILTO,
++            "sort": "relevance_score:desc",
++        },
++        timeout=30,
++    )
++    print(f"OpenAlex Status: {rsp.status_code} (query={query[:60]!r})")
++    rsp.raise_for_status()
++    works = rsp.json().get("results", [])
++    if not works:
++        return None
++    papers: List[Dict] = []
++    for w in works:
++        authorships = w.get("authorships", []) or []
++        names = [
++            a.get("author", {}).get("display_name", "")
++            for a in authorships
++            if a.get("author")
++        ]
++        names = [n for n in names if n][:10]
++        pl = w.get("primary_location") or {}
++        src = (pl.get("source") or {}) if pl else {}
++        venue = src.get("display_name") or ""
++        papers.append(
++            {
++                "title": _clean(w.get("title") or ""),
++                "authors": ", ".join(names[:8]) or "Unknown",
++                "venue": venue or "n/a",
++                "year": w.get("publication_year") or "",
++                "abstract": _reconstruct_abstract(w.get("abstract_inverted_index")),
++                "citationCount": w.get("cited_by_count", 0),
++                "citationStyles": {"bibtex": _make_bibtex(w, names, venue)},
++            }
++        )
++    time.sleep(0.3)
++    return papers
+diff --git a/ai_scientist/tools/semantic_scholar.py b/ai_scientist/tools/semantic_scholar.py
+index a23dfc1..8952cd9 100644
+--- a/ai_scientist/tools/semantic_scholar.py
++++ b/ai_scientist/tools/semantic_scholar.py
+@@ -53,6 +53,7 @@ class SemanticScholarSearchTool(BaseTool):
+         backoff.expo,
+         (requests.exceptions.HTTPError, requests.exceptions.ConnectionError),
+         on_backoff=on_backoff,
++        max_tries=5,
+     )
+     def search_for_papers(self, query: str) -> Optional[List[Dict]]:
+         if not query:
+@@ -99,7 +100,7 @@ Abstract: {paper.get("abstract", "No abstract available.")}"""
+ 
+ 
+ @backoff.on_exception(
+-    backoff.expo, requests.exceptions.HTTPError, on_backoff=on_backoff
++    backoff.expo, requests.exceptions.HTTPError, on_backoff=on_backoff, max_tries=5
+ )
+ def search_for_papers(query, result_limit=10) -> Union[None, List[Dict]]:
+     S2_API_KEY = os.getenv("S2_API_KEY")
+diff --git a/ai_scientist/treesearch/backend/__init__.py b/ai_scientist/treesearch/backend/__init__.py
+index ad22cb6..cddfe4f 100644
+--- a/ai_scientist/treesearch/backend/__init__.py
++++ b/ai_scientist/treesearch/backend/__init__.py
+@@ -1,6 +1,19 @@
+ from . import backend_anthropic, backend_openai
+ from .utils import FunctionSpec, OutputType, PromptType, compile_prompt_to_md
+ 
++
++def _route_model(model):
++    """Map hardcoded / unavailable model names to router-available ones (gpt-5.5 / gpt-4o)."""
++    if not model:
++        return model
++    if "claude" in model:
++        return "gpt-5.5"
++    if model.startswith("o1") or model.startswith("o3"):
++        return "gpt-5.5"
++    if model.startswith("gpt-4o"):
++        return "gpt-4o"
++    return model
++
+ def get_ai_client(model: str, **model_kwargs):
+     """
+     Get the appropriate AI client based on the model string.
+@@ -41,6 +54,7 @@ def query(
+         OutputType: A string completion if func_spec is None, otherwise a dict with the function call details.
+     """
+ 
++    model = _route_model(model)
+     model_kwargs = model_kwargs | {
+         "model": model,
+         "temperature": temperature,
+diff --git a/ai_scientist/treesearch/log_summarization.py b/ai_scientist/treesearch/log_summarization.py
+index f0886d8..0a96760 100644
+--- a/ai_scientist/treesearch/log_summarization.py
++++ b/ai_scientist/treesearch/log_summarization.py
+@@ -356,7 +356,13 @@ def overall_summarize(journals, cfg=None):
+                 total=len(list(journals)),
+             )
+         )
+-        draft_summary, baseline_summary, research_summary, ablation_summary = results
++        # Robust to experiments that terminated before reaching all 4 stages
++        # (e.g. stage 1 failed to find a working implementation): pad to 4 so the
++        # unpack never raises "not enough values to unpack".
++        results = list(results)
++        while len(results) < 4:
++            results.append([])
++        draft_summary, baseline_summary, research_summary, ablation_summary = results[:4]
+ 
+     return draft_summary, baseline_summary, research_summary, ablation_summary
+ 
+diff --git a/ai_scientist/treesearch/parallel_agent.py b/ai_scientist/treesearch/parallel_agent.py
+index 3f0ae59..37c8ede 100644
+--- a/ai_scientist/treesearch/parallel_agent.py
++++ b/ai_scientist/treesearch/parallel_agent.py
+@@ -300,9 +300,16 @@ class MinimalAgent:
+             "CRITICAL GPU REQUIREMENTS - Your code MUST include ALL of these:",
+             "  - At the start of your code, add these lines to handle GPU/CPU:",
+             "    ```python",
+-            "    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')",
++            "    import torch",
++            "    if torch.cuda.is_available():",
++            "        device = torch.device('cuda')",
++            "    elif getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():",
++            "        device = torch.device('mps')",
++            "    else:",
++            "        device = torch.device('cpu')",
+             "    print(f'Using device: {device}')",
+             "    ```",
++            "  - If device is 'mps' (Apple Silicon): MPS is float32-only, so avoid float64/.double(); some FFT/sparse/advanced-index ops are unsupported and rely on the PYTORCH_ENABLE_MPS_FALLBACK=1 CPU fallback (already set by the runner).",
+             "  - ALWAYS move models to device using the `.to(device)` method",
+             "  - ALWAYS move input tensors to device using the `.to(device)` method",
+             "  - ALWAYS move model related tensors to device using the `.to(device)` method",
+@@ -669,9 +676,12 @@ class MinimalAgent:
+             code = extract_code(completion_text)
+             nl_text = extract_text_up_to_code(completion_text)
+ 
+-            if code and nl_text:
+-                # merge all code blocks into a single string
+-                return nl_text, code
++            if code:
++                # Reasoning models (gpt-5.x) often emit only a code block with no
++                # separate natural-language plan, leaving nl_text empty. The original
++                # `code and nl_text` rejected these valid code-only drafts. Accept any
++                # non-empty extracted code; supply a placeholder plan when absent.
++                return (nl_text or "Code-only draft (model emitted no separate plan)."), code
+ 
+             print("Plan + code extraction failed, retrying...")
+             prompt["Parsing Feedback"] = (
+@@ -1093,7 +1103,19 @@ class GPUManager:
+ 
+     def __init__(self, num_gpus: int):
+         self.num_gpus = num_gpus
+-        self.available_gpus: Set[int] = set(range(num_gpus))
++        # Respect CUDA_VISIBLE_DEVICES. get_gpu_count() uses nvidia-smi, which
++        # ignores CUDA_VISIBLE_DEVICES and always reports ALL physical GPUs — so
++        # several runs pinned to disjoint partitions on one box would each manage
++        # set(range(8)) and double-book the same physical GPUs (worker then sets
++        # CUDA_VISIBLE_DEVICES to a card outside its partition -> cross-run
++        # contention / crashes). When a partition is set, only manage those ids.
++        cvd = os.environ.get("CUDA_VISIBLE_DEVICES")
++        if cvd is not None and cvd.strip() != "":
++            ids = [int(x) for x in cvd.split(",") if x.strip() != ""]
++            self.available_gpus: Set[int] = set(ids)
++            self.num_gpus = len(ids)
++        else:
++            self.available_gpus = set(range(num_gpus))
+         self.gpu_assignments: Dict[str, int] = {}  # process_id -> gpu_id
+ 
+     def acquire_gpu(self, process_id: str) -> int:
+@@ -1139,6 +1161,19 @@ def get_gpu_count() -> int:
+         return 0
+ 
+ 
++def mps_available() -> bool:
++    """True if Apple Silicon Metal (MPS) backend is usable (Mac, no NVIDIA)."""
++    try:
++        import torch
++
++        return (
++            getattr(torch.backends, "mps", None) is not None
++            and torch.backends.mps.is_available()
++        )
++    except Exception:
++        return False
++
++
+ class ParallelAgent:
+     def __init__(
+         self,
+@@ -1168,16 +1203,34 @@ class ParallelAgent:
+         self.num_workers = cfg.agent.num_workers
+         self.num_gpus = get_gpu_count()
+         print(f"num_gpus: {self.num_gpus}")
+-        if self.num_gpus == 0:
+-            print("No GPUs detected, falling back to CPU-only mode")
++        # Accelerator kind drives device handling: 'cuda' (NVIDIA, partitionable
++        # across workers via CUDA_VISIBLE_DEVICES), 'mps' (Apple Silicon — a SINGLE
++        # shared device that cannot be split like multi-GPU), or 'cpu'.
++        if self.num_gpus > 0:
++            self.accel_kind = "cuda"
++            print(f"Detected {self.num_gpus} CUDA GPUs")
++        elif mps_available():
++            self.accel_kind = "mps"
++            print("No NVIDIA GPU; using Apple MPS (single shared device — workers share it)")
+         else:
+-            print(f"Detected {self.num_gpus} GPUs")
++            self.accel_kind = "cpu"
++            print("No GPUs detected, falling back to CPU-only mode")
+ 
+         self.gpu_manager = GPUManager(self.num_gpus) if self.num_gpus > 0 else None
+ 
+         if self.num_gpus > 0:
+             self.num_workers = min(self.num_workers, self.num_gpus)
+             logger.info(f"Limiting workers to {self.num_workers} to match GPU count")
++        elif self.accel_kind == "mps":
++            # MPS uses unified memory shared with the OS; many concurrent workers
++            # on one shared device OOM easily. Cap conservatively (raise it if you
++            # have lots of unified memory).
++            mps_cap = min(self.num_workers, 2)
++            if mps_cap != self.num_workers:
++                logger.info(
++                    f"Limiting workers {self.num_workers} -> {mps_cap} for shared MPS device (unified-memory safety)"
++                )
++            self.num_workers = mps_cap
+ 
+         self.timeout = self.cfg.exec.timeout
+         self.executor = ProcessPoolExecutor(max_workers=self.num_workers)
+@@ -1235,9 +1288,12 @@ class ParallelAgent:
+             code = extract_code(completion_text)
+             nl_text = extract_text_up_to_code(completion_text)
+ 
+-            if code and nl_text:
+-                # merge all code blocks into a single string
+-                return nl_text, code
++            if code:
++                # Reasoning models (gpt-5.x) often emit only a code block with no
++                # separate natural-language plan, leaving nl_text empty. The original
++                # `code and nl_text` rejected these valid code-only drafts. Accept any
++                # non-empty extracted code; supply a placeholder plan when absent.
++                return (nl_text or "Code-only draft (model emitted no separate plan)."), code
+             print("Plan + code extraction failed, retrying...")
+             prompt["Parsing Feedback"] = (
+                 "The code extraction failed. Make sure to use the format ```python ... ``` for the code blocks."
+@@ -1443,6 +1499,12 @@ class ParallelAgent:
+         if gpu_id is not None:
+             os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+             logger.info(f"Process {process_id} assigned to GPU {gpu_id}")
++        elif mps_available():
++            # Apple MPS is a single shared device with no CUDA_VISIBLE_DEVICES
++            # analogue — don't blank CVD (some code reads that as "no GPU").
++            # Enable CPU fallback for ops MPS doesn't implement.
++            os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
++            logger.info(f"Process {process_id} running on Apple MPS")
+         else:
+             os.environ["CUDA_VISIBLE_DEVICES"] = ""
+             logger.info(f"Process {process_id} running on CPU")
+@@ -2148,8 +2210,40 @@ class ParallelAgent:
+         print("Waiting for results")
+         for i, future in enumerate(futures):
+             try:
+-                print("About to get result from future")
+-                result_data = future.result(timeout=self.timeout)
++                # ONLY the worker-result retrieval is guarded for skip-on-failure.
++                # A single node's worker raising (e.g. bad generated code, model
++                # quirk) must NOT kill the whole tree search — the original `raise`
++                # here took down entire full-pipeline runs (gpt-4o, kimi). We log and
++                # skip that node instead.
++                # Crucially, the journal-integration code below is deliberately NOT in
++                # this guard: if Node.from_dict / state updates / journal.append throw,
++                # that's a genuine framework/state bug and must surface (otherwise we'd
++                # silently corrupt the tree, e.g. parent.children holding a node that
++                # never made it into journal.nodes).
++                try:
++                    print("About to get result from future")
++                    result_data = future.result(timeout=self.timeout)
++                except TimeoutError:
++                    print("Worker process timed out, skipping this node")
++                    logger.error("Worker process timed out, couldn't get the result")
++                    continue
++                except Exception as e:
++                    # A broken executor pool is fatal: every remaining future will
++                    # also fail, so surface it instead of silently skipping every
++                    # node. Other (node-level) worker exceptions
++                    # are logged and skipped so one bad node can't kill the run.
++                    from concurrent.futures.process import BrokenProcessPool
++
++                    if isinstance(e, BrokenProcessPool):
++                        logger.error(f"Executor process pool is broken; aborting stage: {e}")
++                        raise
++                    print(f"Node worker failed, skipping this node: {str(e)}")
++                    logger.error(f"Node worker failed, skipping this node: {str(e)}")
++                    import traceback
++
++                    traceback.print_exc()
++                    continue
++
+                 if "metric" in result_data:
+                     print(f"metric type: {type(result_data['metric'])}")
+                     print(f"metric contents: {result_data['metric']}")
+@@ -2168,17 +2262,6 @@ class ParallelAgent:
+                 # Add node to journal's list and assign its step number
+                 self.journal.append(result_node)
+                 print("Added result node to journal")
+-
+-            except TimeoutError:
+-                print("Worker process timed out, couldn't get the result")
+-                logger.error(f"Worker process timed out, couldn't get the result")
+-            except Exception as e:
+-                print(f"Error processing node: {str(e)}")
+-                logger.error(f"Error processing node: {str(e)}")
+-                import traceback
+-
+-                traceback.print_exc()
+-                raise
+             finally:
+                 # Release GPU for this process if it was using one
+                 process_id = f"worker_{i}"
+diff --git a/ai_scientist/vlm.py b/ai_scientist/vlm.py
+index 2535797..590ed38 100644
+--- a/ai_scientist/vlm.py
++++ b/ai_scientist/vlm.py
+@@ -11,6 +11,12 @@ from ai_scientist.utils.token_tracker import track_token_usage
+ MAX_NUM_TOKENS = 4096
+ 
+ AVAILABLE_VLMS = [
++    # router-available names (benchmark)
++    "gpt-4o",
++    "gpt-4o-mini",
++    "gpt-5.5",
++    "gpt-5-chat",
++    "gemini-3.5-flash",
+     "gpt-4o-2024-05-13",
+     "gpt-4o-2024-08-06",
+     "gpt-4o-2024-11-20",
+@@ -194,7 +200,7 @@ def get_response_from_vlm(
+ 
+ def create_client(model: str) -> tuple[Any, str]:
+     """Create client for vision-language model."""
+-    if model in [
++    if "gpt" in model or "gemini" in model or model in [
+         "gpt-4o-2024-05-13",
+         "gpt-4o-2024-08-06",
+         "gpt-4o-2024-11-20",
+diff --git a/bfts_config.yaml b/bfts_config.yaml
+index 189b45b..4be2495 100644
+--- a/bfts_config.yaml
++++ b/bfts_config.yaml
+@@ -9,21 +9,19 @@ log_dir: logs
+ workspace_dir: workspaces
+ 
+ # whether to copy the data to the workspace directory (otherwise it will be symlinked)
+-# copying is recommended to prevent the agent from accidentally modifying the original data
+ copy_data: True
+ 
+-exp_name: run # a random experiment name will be generated if not provided
++exp_name: run
+ 
+ # settings for code execution
+ exec:
+-  timeout: 3600
++  timeout: 3600   # FULL: 1h per experiment node (paper default)
+   agent_file_name: runfile.py
+   format_tb_ipython: False
+ 
+ generate_report: True
+-# LLM settings for final report from journal
+ report:
+-  model: gpt-4o-2024-11-20
++  model: gpt-4o   # ROUTER
+   temp: 1.0
+ 
+ experiment:
+@@ -35,53 +33,39 @@ debug:
+ # agent hyperparams
+ agent:
+   type: parallel
+-  num_workers: 4
++  num_workers: 8   # FULL: use all 8 H20 GPUs in parallel
+   stages:
+-    stage1_max_iters: 20
++    stage1_max_iters: 20   # FULL: paper default
+     stage2_max_iters: 12
+     stage3_max_iters: 12
+     stage4_max_iters: 18
+-  # how many improvement iterations to run
+-  steps: 5 # if stage-specific max_iters are not provided, the agent will use this value for all stages
+-  # whether to instruct the agent to use CV (set to 1 to disable)
++  steps: 5
+   k_fold_validation: 1
+   multi_seed_eval:
+-    num_seeds: 3 # should be the same as num_workers if num_workers < 3. Otherwise, set it to be 3.
+-  # whether to instruct the agent to generate a prediction function
++    num_seeds: 3   # FULL: paper default
+   expose_prediction: False
+-  # whether to provide the agent with a preview of the data
+   data_preview: False
+ 
+   # LLM settings for coding
+   code:
+-    model: anthropic.claude-3-5-sonnet-20241022-v2:0
++    model: gpt-5.5   # ROUTER (quality-first; reasoning model, slow)
+     temp: 1.0
+-    max_tokens: 12000
++    max_tokens: 32000
+ 
+   # LLM settings for evaluating program output / tracebacks
+   feedback:
+-    model: gpt-4o-2024-11-20
+-    # gpt-4o
++    model: gpt-5.5   # ROUTER
+     temp: 0.5
+-    max_tokens: 8192
++    max_tokens: 16000
+ 
+   vlm_feedback:
+-    model: gpt-4o-2024-11-20
++    model: gpt-4o   # ROUTER (vision)
+     temp: 0.5
+     max_tokens: null
+ 
+   search:
+     max_debug_depth: 3
+     debug_prob: 0.5
+-    num_drafts: 3
++    num_drafts: 3   # FULL: paper default
+ 
+-  # Options for summarizing findings and selecting the best node
+-  # If not specified, the default behavior will be used.
+-
+-  # summary:
+-  #   model: gpt-4o
+-  #   temp: 0.3
+-
+-  # select_node:
+-  #   model: gpt-4o
+-  #   temp: 0.3
++  # summary / select_node use defaults (gpt-4o via _route_model)
