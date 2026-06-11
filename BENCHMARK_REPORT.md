@@ -201,3 +201,61 @@
 → 这些让 PDF "一眼坏",但**与科学质量无关**;扣掉后剩的真实缺陷(玩具/退化/hallucination)官方那几篇**一篇不少**(论文 Limitations 自列 hallucinations / inaccurate citations / duplicating figures / underdeveloped ideas)。
 
 **§11 结论**:差距 = **survivorship(43→3→1)+ 无 Claude Sonnet 4 代码大脑 + 节点预算只到曲线平台区**,外加一层 router/无-key 的工具链破相。**不是"模型烂到只配 3 分"**——补上前两块(尤其 Claude 代码大脑 + 30+ 节点),产出会和官方 showcase 落同一档;而官方 showcase 本身按真实顶会标准也是弱论文。
+
+## 12. 满预算复跑:预算到底能不能破 Overall-3 天花板
+
+§7 的全流程是降预算(stage 15/8/8/0)。为隔离"预算"这个变量,4 个能跑通树搜索的模型各做一次**满预算**全流程(stage 20/12/12/18、num_seeds 3、exec.timeout 1h,同一 idea「distributional oversmoothing」,writeup/review 统一 gpt-4o 兜底/裁判),结果:
+
+| 模型 | 满预算 Overall | 节点(good 率) | 实验数据 | 备注 |
+|---|---|---|---|---|
+| **deepseek-v3.2** | **4** | 64(41%) | 合成(SimpleNN+make_blobs) | 唯一 >3;退化 100% 结果包装成阴性发现 |
+| gpt-4o | 3 | 63(68%) | 合成 | 论文 hallucinate 成 CIFAR/DomainNet(造假) |
+| gemini-2.5-pro | 3 | 60(50%) | 真实 | 部分图缺失 |
+| **gpt-5.5** | 3(S2 P2 C2) | 63(**66%**) | **真实 MNIST/Fashion/CIFAR** | 代码大脑强,但 writeup 弱拖 Presentation=2 |
+
+**核心结论(预算 vs 天花板)**:
+1. **满预算只把 deepseek 从 3 抬到 4,其余三个仍卡 Overall 3**。对照降预算(§7 全 3),预算从 stage15/8/8/0 → 20/12/12/18 **只带来边际提升**,远没破评审线(6)。
+2. **真实数据集 ≠ 高分**:gpt-5.5 自发用**真实 MNIST/Fashion/CIFAR**(非合成退化)+ 66% good 节点(代码大脑最强之一),**仍只 Overall 3**——因为 ① writeup 弱(Presentation 2)② auto-reviewer 对 AI 论文的压缩标尺。这反驳了"gpt-5.5 做大脑不够"的早先印象(它是强大脑),并实锤"**真实实验本身突破不了 Overall-3 天花板**"。
+3. **由此推出 Phase 2 的方向**:要破 3,光靠满预算(20/12/12/18)和真实数据不够,需要 **Fig3c 右端的更大节点预算(scaled 40/30/30/40,目标 100+ 有效节点)+ ensemble 评审 + grounding 零造假验证**——即综合复现协议 v3(`COMPREHENSIVE_PROTOCOL.md`)。生成透明度附录见 `papers/*_GENERATION_APPENDIX.md`,token 实测 deepseek 满预算 ≈ 4.3M/篇。
+
+## 13. 48h 冲刺:零造假 gate + 头对头官方 showcase(2026-06-10/11)
+
+§12 指出的方向(更大节点预算)在实跑中被证伪了一半:scaled 档(stage 40/30/30/40、num_seeds 10、exec.timeout 8h、每路 1 worker)8 个 idea 跑满 72h 墙钟被全部强杀,0 篇论文产出——根因是 num_workers 被代码夹到 min(workers, 可见 GPU 数)、8h 节点超时把单节点实验撑到数小时且把 128 核 CPU 打爆(load 289+)、num_seeds=10 在单 worker 下等于 40 次串行重跑。结论:**预算的正确花法不是把单棵树撑大,而是按官方预算多跑树 + 把省下的算力投给质量与诚实性的后处理**。据此改为 48h 冲刺,评测规则在数据完成前预注册(`PREREGISTRATION.md`,commit 63f26f2)。
+
+### 13.1 冲刺管线
+
+- **生成**:4 路并行(各 2 GPU),官方预算(20/12/12/18、seed 3、drafts 3、exec 1h),code/feedback=gpt-5.5,writeup/citation/review/agg=gpt-4o;每 idea 10h 硬上限;idea 队列按 5 评委共识分排序(`selection/`)。单 idea 墙钟实测 3.5-6.4h。
+- **抢救链**(`tools/rescue_writeup.py`):被强杀的树离线重建 stage summaries(journal 每步落盘,summary 仅在全阶段结束才写——框架缺陷)→ 聚合 → writeup → review。实测被杀树的论文与原生完整 run 同分数带。
+- **强制重聚合**(`tools/fix_aggregation.py`):官方聚合机制让 LLM 猜数据结构,0-1 图且 reflection 5 轮修不动;把 npy 真实嵌套结构 dump 给模型重写聚合脚本,一次命中 8-9 图。
+- **5 票评审尺**(`tools/ensemble_review.py`):gpt-5.5×3 + gpt-4o×2 + meta(NeurIPS 表单),对我方论文、官方 showcase、校准集(Attention=9.0、边缘真 ICLR=3.2)同尺适用。
+- **grounding gate**(`tools/grounding_audit.py` + `tools/reground_rewrite.py`):逐条声明对照 journal/实验数据/图,判 grounded/无支撑/矛盾;定点 find/replace 改写(矛盾→改成日志真值,无支撑→删除或改为诚实局限)→ 重编译 → 重审计,循环至 ≥95% grounded;含编译修复前置(writeup 末轮 reflection 常留坏 tex)。
+- **诚实重写**(`tools/honest_rewrite.py`,writeup-v2):从 grounded 材料整篇重写干净叙事(非手术删改),输入仅限机器产物,产物强制重过 gate。
+- **审计器校准**(`tools/audit_calibration.py`):fault-injection,20 条已知捏造 + 20 条已验真声明盲审。
+
+### 13.2 首发测量量(本工作真正的原创贡献)
+
+1. **AI 论文 writeup 层系统性造假率**:原始论文逐条声明审计,grounded 比率仅 **14%-40%**,且与实验完整度无关(完整 4 阶段树的论文同样只有 17-36%)——造假是写作环节的系统行为,不是实验不足的症状。官方 3 篇(干净原版)纯文本一致性审计也有 **14-32% 声明内部自相矛盾**。
+2. **诚实税**:强制全部声明可溯源后,5 票分平均下降约 **-0.25**(区间 0 至 -0.6);**7 篇论文零税或仅 -0.2 守住 2.4**——实验真有信号时诚实几乎不掉分,印证"G1×G2 同时成立的支点是实验扎实"。
+3. **gate 收敛性**:15+ 篇全部在 ≤3 轮内收敛到 95%-100% grounded(多数 100%),每篇产出"声明→日志"溯源证书。
+4. **审计器可信度**:注入造假 recall **100%**(20/20)、误伤真声明 FPR **5%**;跨家族双审(deepseek-v3.2)Cohen's κ=**0.849**。
+5. **分母漂移警示**:claim 重抽会使同一论文跨轮 grounded% 漂移(实测 95.3%→93.9% 纯因重抽),跨轮比较须冻结分母。
+
+### 13.3 头对头官方 showcase
+
+官方 3 篇基线用其 arXiv 报告(2504.08066)附录 C.1-C.3 切出的**无标注原版**(GitHub 的 annotated 版会压低评审分 0.2-0.4,作废)。
+
+- **绝对尺(5 票)**:所有机器论文(我方 raw 2.4-2.6 / 我方诚实版 1.8-2.4 / 官方 2.0-2.6 / 四篇早期满预算论文 2.4-2.6)压缩在同一分数带;该尺粒度 0.2=单评委单票、gpt-5.5 评委对 2-3 档 mode-collapse,**只能支持"同档"结论**。
+- **成对盲评锦标赛(预注册的优越性仪器)**:我方 5 篇诚实认证版 vs 官方 3 篇原版,3 评委家族 × 双向呈现 × 90 场:**总胜率 84.4%,Wilson 95% CI [0.756, 0.905]**;分评委 gpt-5.5 100%、deepseek-v3.2(对双方栈均中立)93.3% [0.787, 0.982]、gpt-4o 60% [0.423, 0.754](唯一跨 50%,如实披露);对官方逐篇胜率 90%/86.7%/76.7%,CI 下界全部高于 50%。注意让步条件:我方出战的是删尽无支撑内容的诚实版,对方是含造假的原版。
+- **G2 头对头**:我方 gate 通过率 100%(15+ 篇,每篇带证书);官方 0/3——无公开实验日志使其根本无法接受声明级审计,而其文本级弱审计也不过(上文内部矛盾率),且其造假已由官方自己的标注版 PDF 与报告 Limitations 承认。两层审计深度不对称是数据可得性的硬约束,两侧数字不可同列比较。
+
+### 13.4 双口径 survivorship
+
+我方公开**全部** N 篇分数分布(原始+诚实+重写三版谱系,被杀/抢救树打 flag 单列,见 `sprint/scoreboard.json`),从中按预注册规则(诚实分 top-5)选 showcase;官方为 43 选 3(7%)且其余 40 篇分布未公开。
+
+### 13.5 Threats to validity
+
+评委面板无 Anthropic 家族模型(官方论文由 Claude/o1 栈生成,我方由 gpt 栈生成,deepseek 评委对双方中立是主要缓解);官方样本 n=3;绝对尺在 2-3 档无校准锚;审计员与改写循环存在 in-loop 耦合(由 fault-injection 校准 + 跨家族双审缓解,held-out 终审为后续工作);树搜索逐 run 不可复现(v2 固有);gpt-4o 评委票与 writeup 模型同源。
+
+### 13.6 新增框架缺陷清单(复现者注意)
+
+聚合器猜数据结构产 0 图且 reflection 修不动;writeup 末轮 reflection 覆盖写坏 template.tex(样式名写错/Lonely \item,而 PDF 是早期好版本编译的,2/8 命中);writeup 重试开场删旧 reflection PDF(与并行读 PDF 的工具竞态);`find_pdf_path_for_review` 在无 PDF 时 UnboundLocalError 使整个 run 以 rc=1 崩溃;stage summary 延迟落盘(全阶段结束才写)使被杀树必须离线重建;psutil 清理按关键词杀全机 python 进程(并行多 run 时第一个完成者会误杀其余,本文已中和)。
