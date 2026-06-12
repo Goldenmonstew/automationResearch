@@ -224,7 +224,7 @@
 
 ### 13.1 冲刺管线
 
-- **生成**:4 路并行(各 2 GPU),官方预算(20/12/12/18、seed 3、drafts 3、exec 1h),code/feedback=gpt-5.5,writeup/citation/review/agg=gpt-4o;每 idea 10h 硬上限;idea 队列按 5 评委共识分排序(`selection/`)。单 idea 墙钟实测 3.5-6.4h。
+- **生成**:4 路并行(各 2 GPU),官方预算(20/12/12/18、seed 3、drafts 3、exec 1h),code/feedback=gpt-5.5,writeup/citation/review/agg=gpt-4o;每 idea 10h 硬上限;idea 队列按 5 评委共识分排序(`selection/`)。单 idea 墙钟终版实测 2.2-10h(中位 ~6h,5/20 触 10h 上限)。
 - **抢救链**(`tools/rescue_writeup.py`):被强杀的树离线重建 stage summaries(journal 每步落盘,summary 仅在全阶段结束才写——框架缺陷)→ 聚合 → writeup → review。实测被杀树的论文与原生完整 run 同分数带。
 - **强制重聚合**(`tools/fix_aggregation.py`):官方聚合机制让 LLM 猜数据结构,0-1 图且 reflection 5 轮修不动;把 npy 真实嵌套结构 dump 给模型重写聚合脚本,一次命中 8-9 图。
 - **5 票评审尺**(`tools/ensemble_review.py`):gpt-5.5×3 + gpt-4o×2 + meta(NeurIPS 表单),对我方论文、官方 showcase、校准集(Attention=9.0、边缘真 ICLR=3.2)同尺适用。
@@ -259,3 +259,14 @@
 ### 13.6 新增框架缺陷清单(复现者注意)
 
 聚合器猜数据结构产 0 图且 reflection 修不动;writeup 末轮 reflection 覆盖写坏 template.tex(样式名写错/Lonely \item,而 PDF 是早期好版本编译的,2/8 命中);writeup 重试开场删旧 reflection PDF(与并行读 PDF 的工具竞态);`find_pdf_path_for_review` 在无 PDF 时 UnboundLocalError 使整个 run 以 rc=1 崩溃;stage summary 延迟落盘(全阶段结束才写)使被杀树必须离线重建;psutil 清理按关键词杀全机 python 进程(并行多 run 时第一个完成者会误杀其余,本文已中和)。
+
+### 13.7 收盘终版(2026-06-12,全部数字以本节为准)
+
+冲刺 20 棵树全部消化(14 个 rc=0、5 个触 10h 上限、1 个评审环节崩,后两类经离线补链全部成文),加 6 棵抢救树共 **26 个论文实例(20 个独立 idea)走完 gate 链**:
+
+- **gate**:25/26 达 ≥95% grounded,**17/26 达 100% CLEAN**;1 篇(warmup_weight_decay)止步 93%,按预注册规则标记、不进 showcase。原始版 grounded 中位 ~30%(17 篇在 14-40%、2 篇 ~53%);2 篇抢救树"原始版"即达 95/98%——抢救链 writeup 的输入是从日志重建的真实 summary,**输入真实时编造骤降,造假率主要由 writeup 输入质量决定**。
+- **诚实税终版**:26 篇均值 **-0.285**(区间 0 至 -0.6),7 篇零税;诚实版分布 2.4×9 / 2.2×7 / 2.0×7 / 1.8×3;原始版带宽 2.4-2.8。
+- **showcase top-5**(预注册规则,9 篇并列 2.4 按策展共识分破平;同 idea 双版本取最优版并披露):label_noise_diagnostic(17.0,触上限树)、augmentation_noise_interaction(16.75,抢救+诚实重写版)、confidence_maximizing_augmentation(16.75,原生)、bn_momentum_small_data(16.33,原生)、compressibility_early_stopping(16.25,评审崩树完整)。并列落选(共识 16.0):test_time_simplicity_gap、class_learning_order_imbalance、kernel_placement_small_data。打包(PDF+证书+评审)见 `sprint/showcase/`。
+- **Presentation 维度实测**(67 篇次 ensemble):机器论文全体 1.0-2.0(我方原始均值 1.48、诚实版 1.33;官方干净版 1.27-1.33),人类校准论文 2.6-3.8——机器/人类区分度最大的维度。
+- **资源账本**:全战役 token 中心估计 ~1.4 亿(树搜索 1810 节点 × ~67K/节点 ≈ 1.2 亿 + writeup/评审硬记账 816 万 + 评测链估算 1000-1500 万);GPU 预留 ~1140 GPU·h(util 0-12%、显存 0.5-2GB/96GB,严重过剩);折合 ~540 万 token/篇、按 gpt-4o 牌价粗折 ~$20/篇量级(v1 预印本宣称 "less than $15 per paper",量级相当;Nature 版未报任何算力/成本)。吞吐 ~1.6 篇/卡·天(20 篇 ÷ 37.9h×8 卡)。
+- 资源/可行性/能力边界的完整分析见 `FEASIBILITY_REPORT.md`。
