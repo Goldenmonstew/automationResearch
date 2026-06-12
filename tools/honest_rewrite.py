@@ -71,6 +71,66 @@ CURRENT LATEX:
 
 Return the complete rewritten LaTeX document in a ```latex fence."""
 
+# ---- v3 "presentation" variant — post-registration extension (separate
+# lineage, never replaces the frozen-v2 showcase artifacts) ----
+PROMPT_V3 = """Rewrite the following machine-generated workshop paper
+COMPLETELY, as a polished, well-told 4-page ICBINB-style paper (negative /
+unexpected results track). The science is FROZEN; your only job is
+presentation quality: narrative arc, structure, and prose.
+
+HARD CONSTRAINTS (identical to the audited version):
+1. Every empirical statement must be supported by the GROUNDED CLAIMS list or
+   the EXPERIMENT SUMMARIES below. Do not introduce any new numbers, datasets,
+   baselines or experiments. When materials are thin, say less, clearly.
+2. Keep the LaTeX preamble EXACTLY as is; only rewrite content from
+   \\title{{...}} through the conclusion. Keep \\bibliography as is.
+3. Cite only keys in AVAILABLE BIBTEX KEYS; reference figures only by exact
+   filenames in AVAILABLE FIGURES.
+
+PRESENTATION GOALS (the point of this pass):
+4. Open with a crisp motivation: one concrete practitioner question the paper
+   answers, stated in the first paragraph of the introduction.
+5. Give the paper a single clear through-line: hypothesis -> experiment ->
+   what broke / what surprised -> what a practitioner should do differently.
+   State the takeaway explicitly in both abstract and conclusion, worded
+   consistently.
+6. Tighten structure: short subsections with informative headings; no
+   redundant restatement between sections; methods described once, precisely.
+7. Make every kept figure earn its place: caption states what to look at and
+   what it shows (one sentence each); drop figures that do not support the
+   story.
+8. Use the related-work citations to POSITION the finding (what readers would
+   have expected from prior work, and how the result differs) — not as a
+   list.
+9. Plain, direct scientific prose. No filler ("In this paper we..."), no
+   hedging stacks, no marketing adjectives.
+
+RESEARCH IDEA:
+```
+{idea}
+```
+
+GROUNDED CLAIMS (verified against run logs — your factual universe):
+```json
+{claims}
+```
+
+EXPERIMENT SUMMARIES (machine-generated from the run's journals):
+```json
+{summaries}
+```
+
+AVAILABLE FIGURES: {figures}
+
+AVAILABLE BIBTEX KEYS: {bibkeys}
+
+CURRENT LATEX:
+```latex
+{tex}
+```
+
+Return the complete rewritten LaTeX document in a ```latex fence."""
+
 
 def llm(prompt, system, model):
     try:
@@ -99,6 +159,9 @@ def main():
     p.add_argument("--audit", required=True,
                    help="final grounding JSON of the gated version")
     p.add_argument("--model", default="gpt-5.5")
+    p.add_argument("--variant", default="v2", choices=["v2", "presentation"],
+                   help="v2 = frozen pre-registered prompt; presentation = "
+                        "post-registration polish pass (separate lineage)")
     args = p.parse_args()
 
     assert osp.isdir("ai_scientist"), "cwd must be repo root"
@@ -113,7 +176,8 @@ def main():
     tex_path = osp.join(latex_dir, "template.tex")
     with open(tex_path) as f:
         tex = f.read()
-    shutil.copy(tex_path, tex_path + ".pre_rewrite")
+    backup_suffix = ".pre_rewrite" if args.variant == "v2" else ".pre_rewrite_v3"
+    shutil.copy(tex_path, tex_path + backup_suffix)
 
     audit = json.load(open(args.audit))
     grounded = [{"statement": c.get("statement"), "category": c.get("category")}
@@ -136,9 +200,10 @@ def main():
             bib += open(bp, errors="ignore").read()
     bibkeys = sorted(set(re.findall(r"@\w+\{([^,\s]+)\s*,", bib)))[:80]
 
-    prompt = PROMPT.format(idea=idea, claims=json.dumps(grounded, indent=1),
-                           summaries=summaries_str, figures=figures,
-                           bibkeys=bibkeys, tex=tex)
+    tmpl = PROMPT if args.variant == "v2" else PROMPT_V3
+    prompt = tmpl.format(idea=idea, claims=json.dumps(grounded, indent=1),
+                         summaries=summaries_str, figures=figures,
+                         bibkeys=bibkeys, tex=tex)
 
     new_tex = None
     for attempt in range(2):
@@ -159,11 +224,12 @@ def main():
 
     with open(tex_path, "w") as f:
         f.write(new_tex)
-    out_pdf = osp.join(exp_dir, f"{base}_rewritten_r0.pdf")
+    stem = "rewritten" if args.variant == "v2" else "rewrittenv3"
+    out_pdf = osp.join(exp_dir, f"{base}_{stem}_r0.pdf")
     compile_latex(latex_dir, out_pdf)
     if not osp.exists(out_pdf):
-        print("[rewrite] compile failed; restoring pre_rewrite tex")
-        shutil.copy(tex_path + ".pre_rewrite", tex_path)
+        print("[rewrite] compile failed; restoring pre-rewrite tex")
+        shutil.copy(tex_path + backup_suffix, tex_path)
         print("[rewrite] FINAL: compile-failed")
         sys.exit(2)
     print(f"[rewrite] FINAL: ok pdf={out_pdf}")
