@@ -4,7 +4,7 @@
 >
 > 文档结构参考 LLM-for-ontology-construction 系列论文(LLMs4Life/NeOn-GPT、LLMs4OL),并补上它们普遍缺失的 **资源/超时/survivorship 量化**(第 6 节)。
 >
-> 数据口径:所有"实测"均来自 2026-06 的满预算 run(deepseek-v3.2=Overall 4 / gpt-4o=Overall 3 / gemini-2.5-pro 进行中),配置 `num_workers=8, num_seeds=3, stage iters=20/12/12/18, exec.timeout=3600`。代码行号针对本仓库 `AI-Scientist-v2/`。
+> 数据口径:所有"实测"均来自 2026-06 的满预算 run(deepseek-v3.2=Overall 4 / gpt-4o=Overall 3 / gemini-2.5-pro=Overall 3),配置 `num_workers=8, num_seeds=3, stage iters=20/12/12/18, exec.timeout=3600`。代码行号针对本仓库 `AI-Scientist-v2/`。
 
 ---
 
@@ -90,7 +90,7 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 **为什么 GPU 几乎零负载**:这个 idea 的实验是玩具级 `SimpleNN`(3 层 `nn.Linear`、hidden=64、batch=32、合成数据),~6k 参数;实测每进程占的 474–870 MiB 绝大部分是 CUDA context + cuDNN/cuBLAS kernel 的固定"入场费",不是模型真用了那么多。**8×H20(768GB)在此 idea 上等于用机柜跑一个能在笔记本 CPU 上完成的脚本。**
 
-**并发模型**(`parallel_agent.py`):1 worker = 1 进程 = 1 实验节点,`acquire_gpu` 独占一张卡(`min(available_gpus)`,1114-1125),不共享;`num_workers=8` 被 `min(num_workers, num_gpus)` 夹到卡数(1193-1194);`num_seeds=3` 在主搜索 *结束后* 对 best_node 多卡并行重跑(1279-1348);`num_drafts=3` 只控 stage1 初始草稿数。峰值并发 8(主搜索)或 3(seed 阶段),不叠加。
+**并发模型**(`parallel_agent.py`):1 worker = 1 进程 = 1 实验节点,`acquire_gpu` 独占一张卡(`min(available_gpus)`,1121-1132),不共享;`num_workers=8` 被 `min(num_workers, num_gpus)` 夹到卡数(1222);`num_seeds=3` 在主搜索 *结束后* 对 best_node 多卡并行重跑(1317-1387);`num_drafts=3` 只控 stage1 初始草稿数。峰值并发 8(主搜索)或 3(seed 阶段),不叠加。
 
 ---
 
@@ -99,8 +99,8 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 ### 4.1 核心洞察
 
 > **同一个 idea JSON 的真实 GPU 需求不由措辞决定,而由 agent 现场写的代码决定**——措辞只给"倾向性",且框架有**系统性偏置把它往轻量拉**:
-> 1. `exec.timeout=3600`(1h/节点)硬墙 + 这条限制被写进 LLM 提示(`parallel_agent.py:345` "complete within 1 hour"),任何撞墙的大规模方案会被 SIGINT 杀掉、判节点失败、被树搜索淘汰 → agent 被激励选小模型小数据;
-> 2. 无 nvidia-smi 自动降级 CPU-only(1184-1191)→ 框架本就能在无重度 GPU 下产出结果;
+> 1. `exec.timeout=3600`(1h/节点)硬墙 + 这条限制被写进 LLM 提示(`parallel_agent.py:352` "complete within {1 hour}"),任何撞墙的大规模方案会被 SIGINT 杀掉、判节点失败、被树搜索淘汰 → agent 被激励选小模型小数据;
+> 2. 无 nvidia-smi 自动降级 CPU-only(accel_kind 判定 1204-1217)→ 框架本就能在无重度 GPU 下产出结果;
 > 3. **实测铁证**:`compositional_regularization` 措辞写"IWSLT 翻译 + GeoQuery 解析"(本应 T2),但 agent 实际只跑了合成 SCAN、完全跳过两个真实集,writeup 还 hallucinate 了没做的实验。
 >
 > **结论:负面结果/失败模式类(ICBINB 主题)的 idea 普遍 GPU-light**——"证明某方法失效"用小规模就能演示,反而不需要堆算力。这正是该 workshop 主题与框架算力舒适区高度契合的根本原因。
@@ -141,16 +141,16 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 这是树搜索的核心。**三原语(draft/debug/improve)的选择是硬规则、不由 LLM 判断;LLM 只决定每个原语写什么代码、以及"选哪个节点更好"。**
 
-### 5.1 节点选择(best-first,`_select_parallel_nodes` 1949-2069)
+### 5.1 节点选择(best-first,`_select_parallel_nodes` 1993-2114)
 
 每个 `step()` 填满 8 个 worker 槽位,每槽独立做一次 best-first 决策(一步可并行扩展 8 个混合类型节点),优先级:
 
-1. **drafting 优先**(1970):`draft_nodes < num_drafts(3)` → 槽位填 `None`(新 draft)。每 stage 先凑够 3 个根。
-2. **debug(概率门控)**(1982):`random.random() < debug_prob(0.5)`。从 `buggy_nodes` 里筛 `is_leaf and debug_depth <= max_debug_depth(3)`,`random.choice` 随机选(buggy 无有效 metric,不排序)。
-3. **stage4/stage2 特判**(2027):stage4 固定重复 `best_stage3_node`、stage2 固定重复 `best_stage1_node`(让所有 ablation/hyperparam 基于同一 baseline)。
-4. **improve(正常 best-first)**(2034):取 `good_nodes`,用 `get_best_node` 拿当前最佳扩展;若该树已被本轮选过,按 `metric` 降序找下一棵未处理树。`processed_trees` 集合保证一步内尽量覆盖不同 draft 树(探索多样性)。
+1. **drafting 优先**(2014):`draft_nodes < num_drafts(3)` → 槽位填 `None`(新 draft)。每 stage 先凑够 3 个根。
+2. **debug(概率门控)**(2026):`random.random() < debug_prob(0.5)`。从 `buggy_nodes` 里筛 `is_leaf and debug_depth <= max_debug_depth(3)`,`random.choice` 随机选(buggy 无有效 metric,不排序)。
+3. **stage4/stage2 特判**(2072):stage4 固定重复 `best_stage3_node`、stage2 固定重复 `best_stage1_node`(让所有 ablation/hyperparam 基于同一 baseline)。
+4. **improve(正常 best-first)**(2087):取 `good_nodes`,用 `get_best_node` 拿当前最佳扩展;若该树已被本轮选过,按 `metric` 降序找下一棵未处理树。`processed_trees` 集合保证一步内尽量覆盖不同 draft 树(探索多样性)。
 
-### 5.2 三原语何时选哪个(dispatch in `_process_node_wrapper` 1504-1540)
+### 5.2 三原语何时选哪个(dispatch in `_process_node_wrapper` 1549-1583)
 
 | 条件 | 原语 | 含义 |
 |---|---|---|
@@ -162,9 +162,9 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 ### 5.3 buggy 判定(任一为真即 buggy)
 
-1. **exec 异常 + LLM review**(parse_exec_result, 716):`is_buggy = response["is_bug"] or exc_type is not None`。前者是 feedback-model 看 code+term_out 的**软判定**(没抛异常也能判 bug),后者是脚本抛异常的**硬信号**。
+1. **exec 异常 + LLM review**(parse_exec_result, 693):`is_buggy = response["is_bug"] or exc_type is not None`。前者是 feedback-model 看 code+term_out 的**软判定**(没抛异常也能判 bug),后者是脚本抛异常的**硬信号**。
 2. **metric 解析失败**:`valid_metrics_received==False` / 解析代码自身异常 / metric 含 None → 兜底 `WorstMetricValue`、`is_buggy=True`。
-3. **VLM 看图**(_analyze_plots_with_vlm, 1023):设**独立字段** `is_buggy_plots`(图空/无意义)。它排除出 `good_nodes`(不能当 best),但**不触发 debug**(debug 只看 `is_buggy`)。
+3. **VLM 看图**(_analyze_plots_with_vlm, 904):设**独立字段** `is_buggy_plots`(图空/无意义)。它排除出 `good_nodes`(不能当 best),但**不触发 debug**(debug 只看 `is_buggy`)。
 
 角色分工:exec 异常=最硬门槛;LLM review=语义软判定;metric 缺失=数值健全性门槛;VLM=图有效性门槛。
 
@@ -237,12 +237,12 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 | 层 | 管什么 | 值 | 执行点 |
 |---|---|---|---|
-| **① 实验代码执行**(核心,文档里反复说的"1h") | 一个树节点的 `.py` 实验能跑多久(= 节点求值) | `exec.timeout=3600`(1h) | interpreter.py:278-292:`running_time>timeout` 发 SIGINT,`+60s` 强杀,异常名改 `TimeoutError` 判 buggy;收集端 parallel_agent.py:2181 `except TimeoutError: continue` 跳过该节点,**不杀整个 run** |
+| **① 实验代码执行**(核心,文档里反复说的"1h") | 一个树节点的 `.py` 实验能跑多久(= 节点求值) | `exec.timeout=3600`(1h) | interpreter.py:278-292:`running_time>timeout` 发 SIGINT,`+60s` 强杀,异常名改 `TimeoutError` 判 buggy;收集端 parallel_agent.py:2226 `except TimeoutError: continue` 跳过该节点,**不杀整个 run** |
 | **② LLM 单次 API 调用** | 问 gpt-5.5/deepseek 一次、它思考+生成花多久 | openai SDK 默认 ~600s(10min)/次,**未显式设**;`backoff.expo, max_value=60`,**无 max_tries → 一直重试到成功** | backend_openai.py:52 `backoff_create` + utils.py:18 |
 | **③ 整个 run 墙钟**(运维层,非框架) | 整篇论文从头到尾最多跑多久 | 我们编排脚本套的 `timeout 172800`(48h) | shell `timeout` 包住 launch |
 
 - **三者无关**:gpt-5.5 单次调用只几秒~2-3min(受 ②),**绝不会单次跑满 1h**;那 1h 是 ① 给实验代码的。整篇 ~57min/4.6h 是几百次 ② 累加,不是某步卡 1h。早先 deepseek "5h 超时没出论文"是 ③(run 墙钟初期设置过短),后调整为 48h。
-- **制度性副作用**:① 的 1h 还被写进 LLM 提示(parallel_agent.py:352 "complete within 1 hour")主动引导"做轻量实验"——这是实验普遍小、GPU 闲置的根因之一。
+- **制度性副作用**:① 的 1h 还被写进 LLM 提示(parallel_agent.py:352 "it should complete within {1 hour}")主动引导"做轻量实验"——这是实验普遍小、GPU 闲置的根因之一。
 
 **设计局限(批判性讨论)**:① 的杀进程是**纯看墙钟、完全不看还在不在产出**——interpreter.py:279 只判 `running_time > timeout`,不看 stdout 还在不在刷、loss 还在不在降;280 行原作者自留 `# [TODO] handle this in a better way`,连他们都知道这刀切得糙。它把"一个有前途、只是需要多几个 epoch 的实验"也一刀切掉判 buggy(假阴性),是**拿正确性换搜索吞吐**。理由是固定预算并行 best-first 需要节点间公平分时、且没有便宜 oracle 区分"慢但在进步"和"慢且在烧";代价是 T2/T3 真训练类 idea(如 pest_detection 要训 YOLOv8)塞不进 1h 被迫降规模/退化(实测质量最差被拒)。更好的设计会做框架现在**没做**的:checkpoint+续跑 / loss-plateau 检测给延期 / 用 FLOPs 预算替墙钟。这是 **Sakana/AIDE 上游的核心设计,非本复现新增**;论文 Methods 也报告了每节点运行时长 cap。
 
@@ -257,8 +257,9 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 ### 7.1 当前设备处理(代码核实)
 
-- 检测层只认 NVIDIA:`get_gpu_count()`(1135)跑 nvidia-smi,失败 fallback CVD,再不行 return 0;`launch_scientist_bfts.py:134-137` 用 `torch.cuda.device_count()`。**两处都无 MPS 探测。**
-- 真正决定 device 的只有一处:`parallel_agent.py:303` 把 `device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')` 作为**提示词文本**喂给 code LLM。框架自己不建 tensor。**整条链路无 MPS 分支** → Mac 上 `cuda.is_available()=False` 永远落 cpu,摸不到 mps。
+- 官方栈的检测层只认 NVIDIA:`get_gpu_count()`(1142)跑 nvidia-smi,失败 fallback CVD,再不行 return 0;`launch_scientist_bfts.py:134-137` 用 `torch.cuda.device_count()`。这两处不探测 MPS。
+- 真正决定 device 的提示词模板在 `parallel_agent.py:304-309`,把 `if torch.cuda.is_available()` / `elif ...mps.is_available()` / `else cpu` 的三路分支作为**提示词文本**喂给 code LLM。框架自己不建 tensor。
+- **本仓 patch 已为 Mac (Apple Silicon) 新增 MPS 三处探测**(行号针对本仓库 `AI-Scientist-v2/`,已核对):① device 提示词模板加 `mps` 分支(`parallel_agent.py:306-307`,并在 312 说明 MPS float32-only / CPU fallback);② 加速器判定 `accel_kind`(`parallel_agent.py:1212-1214` 经 `mps_available()` 1164,无 NVIDIA 时取 `mps`)+ worker 数封顶到 2(`parallel_agent.py:1228` 共享单设备防 OOM);③ worker 进程对 MPS 跳过 CVD、设 `PYTORCH_ENABLE_MPS_FALLBACK=1`(`parallel_agent.py:1502-1507`)。**因此 Mac 可降级跑**(单一共享 MPS 设备,慢),但 MPS 对 T0/T1 idea 相对 CPU 仅快约 1.2-3×,总时长仍被 LLM 往返主导。
 
 ### 7.2 三平台启用 GPU
 
@@ -266,7 +267,7 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 |---|---|---|
 | **Linux + N卡** | 原生主路径(H20 服务器) | 无需改;多 run 分区务必设好各自 CVD(GPUManager 已修 nvidia-smi 无视 CVD 的坑) |
 | **Windows + N卡** | 检测/CVD 逻辑可移植 | 主要坑:spawn-pickle(无 fork)、SIGINT 超时杀进程语义不同、LLM 生成代码硬编码 `/` 路径。**强烈推荐 WSL2 + CUDA 直通**,当 Linux 跑 |
-| **Mac (Apple Silicon)** | 默默 CPU(无 MPS) | 加 MPS:device 模板(303)三路探测 + 检测层(1135)MPS 探测 + worker(1461)对 MPS 跳过 CVD/设 `PYTORCH_ENABLE_MPS_FALLBACK=1`。详见 `tools/` 补丁 |
+| **Mac (Apple Silicon)** | 本仓 patch 已支持 MPS(官方栈仅 CPU) | MPS 三处探测已 ship:device 模板(304-309)三路探测 + 加速器判定(1212-1214,`mps_available()` 1164)+ worker(1502-1507)对 MPS 跳过 CVD、设 `PYTORCH_ENABLE_MPS_FALLBACK=1`。详见 `tools/` 补丁 |
 
 **Mac MPS 关键 caveat**:MPS 是**单一共享设备**,不能像多卡那样把 8 worker 钉到 8 张"卡"。推荐做法:`num_workers` 调到 2–3、所有 worker 共享 MPS、调大 timeout。MPS 不支持 float64、部分算子(FFT/sparse/边角 scatter)无实现需 CPU fallback。**对 T0/T1 idea,开 MPS 相对 CPU 只快 1.2–3×,且总时长仍被 LLM 主导,体感几乎无差。**
 
@@ -300,4 +301,4 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 - **A. 生成透明度附录**(逐篇的搜索树 + 节点决策):`papers/*_GENERATION_APPENDIX.md`,生成器 `tools/gen_gen_appendix.py`。
 - **B. Token 测量工具**:`tools/measure_tokens.py`(递归 tiktoken 求和交互日志,绕开失效的 TokenTracker)。
 - **C. 本地 patch 清单**:见 `patches/README.md`。
-- **关键代码引用**:决策机制 `treesearch/parallel_agent.py:1504-2069`、`journal.py:158-502`、`utils/metric.py:171-340`、`agent_manager.py:143-829`;设备 `parallel_agent.py:303/1135/1461`;配置 `bfts_config.yaml`。
+- **关键代码引用**:决策机制 `treesearch/parallel_agent.py:1549-2114`、`journal.py:158-502`、`utils/metric.py:171-340`、`agent_manager.py:143-829`;设备 `parallel_agent.py:304-309/1142/1502-1507`;配置 `bfts_config.yaml`。
