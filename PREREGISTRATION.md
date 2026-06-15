@@ -5,6 +5,16 @@ commitments for the in-progress batch replication of the AI Scientist v2
 pipeline, BEFORE the remaining ~8-12 runs complete. Committed for timestamp;
 rules below are final and apply regardless of how the remaining data turns out.
 
+Honesty disclosure (freeze provenance): at the time this file was committed
+(2026-06-10 22:40 CST), approximately 15 of the 28 runs feeding the analysis
+already had scores visible - the six rescue papers (timestamped 06-06 / 06-09)
+plus nine sprint runs that finished before 22:40. Strictly, this file is
+therefore a mid-analysis plan snapshot (part of the data already existed), not
+a pure pre-data pre-registration. The specific numeric ranges in sections 2
+and 3 are descriptive ranges fitted to the already-visible data, not blind
+predictions; the genuinely blind commitment covers only the remaining ~8-12
+runs.
+
 ## 1. Rulers (two-ruler discipline)
 
 - The ONLY absolute ruler used for cross-system comparison is the 5-vote
@@ -20,7 +30,10 @@ rules below are final and apply regardless of how the remaining data turns out.
   band. Therefore absolute-score claims are limited to "same band" (parity).
   Any superiority claim is made ONLY via blind pairwise preference voting
   (both presentation orders, >=3 model families as judges, win-rate with
-  binomial confidence interval).
+  binomial confidence interval). Caveat on the interval: the pairings are NOT
+  iid - each paper faces only n=3 opponents and each pair is repeated 6 times
+  (3 judge families x 2 presentation orders), so the trials are clustered and a
+  naive binomial/Wilson interval understates the true uncertainty.
 
 ## 2. Claim hierarchy (in order; no claim above its evidence)
 
@@ -62,6 +75,9 @@ rules below are final and apply regardless of how the remaining data turns out.
 - Final certificates are signed by a held-out auditor configuration (different
   model family and prompt from the one used inside the rewrite loop); claim
   denominators are frozen after a single extraction pass per final text.
+  Outcome note (this commitment was not met as stated): in practice all 31/31
+  final certificates were signed by the in-loop gpt-5.5 auditor, and the
+  held-out final audit (different family/prompt) was downgraded to future work.
 - The audit-tier asymmetry is disclosed explicitly: our papers receive
   claim-vs-log strong audit; official papers can only receive text-level
   consistency audit (no public logs), and the two tiers are never reported in
