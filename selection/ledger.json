@@ -1,0 +1,2060 @@
+{
+ "deepseek-v3.2": {
+  "0": {
+   "index": 0,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Requires ImageNet-pretrained models which exceed compute cap."
+  },
+  "1": {
+   "index": 1,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Directly tests a counterintuitive failure mode on small datasets."
+  },
+  "2": {
+   "index": 2,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple, feasible intervention on a common hyperparameter practice."
+  },
+  "3": {
+   "index": 3,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Clear paradox on small noisy datasets, highly feasible."
+  },
+  "4": {
+   "index": 4,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 3,
+   "reason": "Substantially duplicates idea 3's core hypothesis and experiments."
+  },
+  "5": {
+   "index": 5,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a practical failure mode of validation on small data."
+  },
+  "6": {
+   "index": 6,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 3,
+   "reason": "Exact duplicate of idea 4, itself a duplicate of 3."
+  },
+  "7": {
+   "index": 7,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Hessian eigenvector estimation may be heavy but idea is novel."
+  },
+  "8": {
+   "index": 8,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Novel intervention contrasting duplication vs. augmentation."
+  },
+  "9": {
+   "index": 9,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": 7,
+   "reason": "Exact duplicate of idea 7, same hypothesis and experiments."
+  },
+  "10": {
+   "index": 10,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple, feasible LR schedule modification for small datasets."
+  },
+  "11": {
+   "index": 11,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Substantially duplicates idea 10's plateau hypothesis."
+  },
+  "12": {
+   "index": 12,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Another duplicate of the LR plateau idea from 10 and 11."
+  },
+  "13": {
+   "index": 13,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Novel compressibility metric, though storage/compression adds overhead."
+  },
+  "14": {
+   "index": 14,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": 13,
+   "reason": "Applies compressibility from idea 13 to early stopping."
+  },
+  "15": {
+   "index": 15,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": 13,
+   "reason": "Duplicate of idea 14, both derive from 13's compressibility."
+  },
+  "16": {
+   "index": 16,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Requires pretrained features or clustering, adding complexity."
+  },
+  "17": {
+   "index": 17,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple oscillatory perturbation to test calibration improvement."
+  },
+  "18": {
+   "index": 18,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Specialized initialization for ViTs, less general but feasible."
+  },
+  "19": {
+   "index": 19,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 17,
+   "reason": "Exact duplicate of idea 17's oscillatory training for calibration."
+  },
+  "20": {
+   "index": 20,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 3,
+   "reason": "Extends idea 3's augmentation-noise paradox to calibration."
+  },
+  "21": {
+   "index": 21,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": 13,
+   "reason": "Another duplicate applying compressibility to early stopping."
+  },
+  "22": {
+   "index": 22,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a subtle, often overlooked aspect of augmentation pipelines."
+  },
+  "23": {
+   "index": 23,
+   "manifestability": 5,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Large hyperparameter sweep but highly relevant to small datasets."
+  },
+  "24": {
+   "index": 24,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Geometric metric computation may be heavy but idea is novel."
+  },
+  "25": {
+   "index": 25,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Novel investigation of gamma init's interaction with weight decay on small datasets."
+  },
+  "26": {
+   "index": 26,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": -1,
+   "reason": "Simple test-time transformation heuristic for small-data robustness."
+  },
+  "27": {
+   "index": 27,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Tests fixed vs. random augmentation order on small datasets."
+  },
+  "28": {
+   "index": 28,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Directly tests interference between regularizers, fitting ICBINB theme."
+  },
+  "29": {
+   "index": 29,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Investigates optimizer operation order on small datasets."
+  },
+  "30": {
+   "index": 30,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 29,
+   "reason": "Duplicate of index 29 (identical title and hypothesis)."
+  },
+  "31": {
+   "index": 31,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 27,
+   "reason": "Duplicate of index 27 (same core idea, slightly rephrased hypothesis)."
+  },
+  "32": {
+   "index": 32,
+   "manifestability": 2,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 2,
+   "dup_of": -1,
+   "reason": "Gradient orthogonality measurement is computationally heavy and may not manifest clearly."
+  },
+  "33": {
+   "index": 33,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Clear synthetic tasks to diagnose memorization vs. learning."
+  },
+  "34": {
+   "index": 34,
+   "manifestability": 2,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 2,
+   "dup_of": -1,
+   "reason": "Hessian estimation and gradient steering are computationally infeasible in 1h."
+  },
+  "35": {
+   "index": 35,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Adaptive BN momentum for small datasets is feasible and testable."
+  },
+  "36": {
+   "index": 36,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 29,
+   "reason": "Extends optimizer order idea with dynamic scheduling."
+  },
+  "37": {
+   "index": 37,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Label noise as a diagnostic directly fits ICBINB and is highly feasible."
+  },
+  "38": {
+   "index": 38,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Architectural modification of skip connection density."
+  },
+  "39": {
+   "index": 39,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Tests architecture-augmentation synergy but requires multiple model implementations."
+  },
+  "40": {
+   "index": 40,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Investigates initialization scale on small datasets."
+  },
+  "41": {
+   "index": 41,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 40,
+   "reason": "Duplicate of index 40 (same core idea)."
+  },
+  "42": {
+   "index": 42,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Well-known batch size effect, but clean test on small datasets."
+  },
+  "43": {
+   "index": 43,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Progressive augmentation scheduling for small datasets."
+  },
+  "44": {
+   "index": 44,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 (same idea)."
+  },
+  "45": {
+   "index": 45,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 (same idea)."
+  },
+  "46": {
+   "index": 46,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Architectural learning dynamics requires multiple models and detailed tracking."
+  },
+  "47": {
+   "index": 47,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 (same idea)."
+  },
+  "48": {
+   "index": 48,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Confidence-guided augmentation adds complexity but is testable."
+  },
+  "49": {
+   "index": 49,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Requires extensive grid search for ground truth, exceeding 1h cap."
+  },
+  "50": {
+   "index": 50,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Grid search over many architectures and hyperparameters is computationally heavy for a 1-hour cap."
+  },
+  "51": {
+   "index": 51,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a specific, implementable hypothesis about regularization staging within a batch."
+  },
+  "52": {
+   "index": 52,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple, controlled CNN variants can clearly test kernel placement on CIFAR-10."
+  },
+  "53": {
+   "index": 53,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Sweeping depth/width and dataset size is computationally intensive but conceptually clear."
+  },
+  "54": {
+   "index": 54,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": 50,
+   "reason": "Substantially duplicates idea 50 with a more specific focus on learning rate and weight decay."
+  },
+  "55": {
+   "index": 55,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Clear hypothesis about augmentation scheduling that is testable on CIFAR-10."
+  },
+  "56": {
+   "index": 56,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a specific temporal ordering of regularizers, feasible with ResNet-18."
+  },
+  "57": {
+   "index": 57,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 55,
+   "reason": "Essentially identical to idea 55, just with more detailed experiment description."
+  },
+  "58": {
+   "index": 58,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 53,
+   "reason": "Direct duplicate of idea 53 with slightly different wording."
+  },
+  "59": {
+   "index": 59,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Requires training many architectures to convergence first, which is heavy for 1 hour."
+  },
+  "60": {
+   "index": 60,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Interesting failure mode hypothesis, but defining 'simplicity' robustly is challenging."
+  },
+  "61": {
+   "index": 61,
+   "manifestability": 2,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Requires per-sample feature distance computation, adding significant overhead."
+  },
+  "62": {
+   "index": 62,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Complex training loop modification but tests an interesting decoupling hypothesis."
+  },
+  "63": {
+   "index": 63,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple, clean test of augmentation ordering consistency on CIFAR-10."
+  },
+  "64": {
+   "index": 64,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Straightforward drop-in activation function test on small CIFAR subsets."
+  },
+  "65": {
+   "index": 65,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Clear hypothesis about class learning imbalance, a good failure mode to study."
+  },
+  "66": {
+   "index": 66,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 64,
+   "reason": "Direct duplicate of idea 64 with slightly rephrased hypothesis."
+  },
+  "67": {
+   "index": 67,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple gradient clipping sweep, easy to implement and test on CIFAR-10."
+  },
+  "68": {
+   "index": 68,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 67,
+   "reason": "Direct duplicate of idea 67 with a slightly different title."
+  },
+  "69": {
+   "index": 69,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple inference-time trick, easy to test with minimal compute."
+  },
+  "70": {
+   "index": 70,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 56,
+   "reason": "Essentially identical to idea 56 (temporal ordering of regularizers)."
+  },
+  "71": {
+   "index": 71,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Interesting 'thinking gap' hypothesis, but implementation adds training complexity."
+  },
+  "72": {
+   "index": 72,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple weight scaling sweep across dataset sizes, feasible with ResNet-18."
+  },
+  "73": {
+   "index": 73,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Excellent ICBINB fit: diagnostic tests for brittleness are clear and fast to run."
+  },
+  "74": {
+   "index": 74,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Requires real-time feature diversity computation and adaptive noise, adding overhead."
+  },
+  "75": {
+   "index": 75,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "The idea is a clear, testable modification of SGD that could show a measurable effect on CIFAR-10 subsets within the time and compute constraints."
+  }
+ },
+ "gpt-4o": {
+  "0": {
+   "index": 0,
+   "manifestability": 2,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Relies on pretrained models and large-scale fine-tuning, limiting feasibility and manifestability."
+  },
+  "1": {
+   "index": 1,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Focuses on label noise and distribution shift, fitting the theme and feasible on CIFAR-10."
+  },
+  "2": {
+   "index": 2,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores weight decay during warmup, feasible on small datasets and novel."
+  },
+  "3": {
+   "index": 3,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Examines augmentation effects under label noise, fitting the theme and feasible on CIFAR-10."
+  },
+  "4": {
+   "index": 4,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 5,
+   "dup_of": 3,
+   "reason": "Substantially duplicates idea 3 with minor variations in framing."
+  },
+  "5": {
+   "index": 5,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes training statistics for early stopping, feasible and fitting the theme."
+  },
+  "6": {
+   "index": 6,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 5,
+   "dup_of": 3,
+   "reason": "Duplicates idea 3 with minor rephrasing and identical experiments."
+  },
+  "7": {
+   "index": 7,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates gradient alignment effects, novel but computationally intensive."
+  },
+  "8": {
+   "index": 8,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Selective duplication under label noise is novel and fits the theme well."
+  },
+  "9": {
+   "index": 9,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 7,
+   "reason": "Duplicates idea 7 with minor rephrasing and identical experiments."
+  },
+  "10": {
+   "index": 10,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores learning rate plateau effects, feasible and fitting the theme."
+  },
+  "11": {
+   "index": 11,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Duplicates idea 10 with minor rephrasing and identical experiments."
+  },
+  "12": {
+   "index": 12,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Duplicates idea 10 with minor rephrasing and identical experiments."
+  },
+  "13": {
+   "index": 13,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes representation compressibility as a generalization metric, novel and feasible."
+  },
+  "14": {
+   "index": 14,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Uses compressibility for early stopping, fitting the theme and feasible."
+  },
+  "15": {
+   "index": 15,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 14,
+   "reason": "Duplicates idea 14 with minor rephrasing and identical experiments."
+  },
+  "16": {
+   "index": 16,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates batching strategies, novel and feasible on CIFAR-10."
+  },
+  "17": {
+   "index": 17,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores oscillatory SGD effects, novel and fitting the theme."
+  },
+  "18": {
+   "index": 18,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes heterogeneous initialization, novel but computationally intensive."
+  },
+  "19": {
+   "index": 19,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 17,
+   "reason": "Duplicates idea 17 with minor rephrasing and identical experiments."
+  },
+  "20": {
+   "index": 20,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Examines augmentation effects on calibration under label noise, fitting the theme well."
+  },
+  "21": {
+   "index": 21,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 14,
+   "reason": "Duplicates idea 14 with minor rephrasing and identical experiments."
+  },
+  "22": {
+   "index": 22,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates augmentation order effects, novel and feasible on CIFAR-10."
+  },
+  "23": {
+   "index": 23,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes a scaling law for weight decay, novel and fitting the theme."
+  },
+  "24": {
+   "index": 24,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores optimization trajectory geometry, novel and feasible on CIFAR-10."
+  },
+  "25": {
+   "index": 25,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores a rarely studied interaction between BatchNorm initialization and weight decay on small datasets."
+  },
+  "26": {
+   "index": 26,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes a simple, testable idea for improving robustness with a single transformation."
+  },
+  "27": {
+   "index": 27,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a plausible hypothesis about augmentation order effects on small datasets."
+  },
+  "28": {
+   "index": 28,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Investigates a potential failure mode of combining regularizers on small datasets."
+  },
+  "29": {
+   "index": 29,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Examines an underexplored aspect of optimizer step ordering on small datasets."
+  },
+  "30": {
+   "index": 30,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 29,
+   "reason": "Duplicates the hypothesis and experiments of idea 29."
+  },
+  "31": {
+   "index": 31,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 27,
+   "reason": "Substantially overlaps with idea 27 on augmentation order effects."
+  },
+  "32": {
+   "index": 32,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes a novel gradient alignment metric as a predictor of generalization."
+  },
+  "33": {
+   "index": 33,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Tests a creative diagnostic for distinguishing learning from memorization."
+  },
+  "34": {
+   "index": 34,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores an interesting but computationally intensive gradient alignment intervention."
+  },
+  "35": {
+   "index": 35,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a straightforward modification to BatchNorm momentum for small datasets."
+  },
+  "36": {
+   "index": 36,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates dynamic optimizer operation scheduling, a novel but complex idea."
+  },
+  "37": {
+   "index": 37,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Uses label noise as a diagnostic for generalization, fitting the negative results theme."
+  },
+  "38": {
+   "index": 38,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests the impact of skip connection density on small-dataset generalization."
+  },
+  "39": {
+   "index": 39,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores architecture-augmentation interactions, a plausible but less novel idea."
+  },
+  "40": {
+   "index": 40,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Examines the underexplored role of initialization scale on optimization trajectories."
+  },
+  "41": {
+   "index": 41,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 40,
+   "reason": "Duplicates the hypothesis and experiments of idea 40."
+  },
+  "42": {
+   "index": 42,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests a well-known hypothesis about small batch sizes as implicit regularizers."
+  },
+  "43": {
+   "index": 43,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Explores progressive augmentation scheduling, a plausible but less novel idea."
+  },
+  "44": {
+   "index": 44,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 43,
+   "reason": "Duplicates the hypothesis and experiments of idea 43."
+  },
+  "45": {
+   "index": 45,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 43,
+   "reason": "Duplicates the hypothesis and experiments of idea 43."
+  },
+  "46": {
+   "index": 46,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates how architectural biases shape early learning dynamics on small datasets."
+  },
+  "47": {
+   "index": 47,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 43,
+   "reason": "Duplicates the hypothesis and experiments of idea 43."
+  },
+  "48": {
+   "index": 48,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Proposes a novel confidence-guided augmentation strategy, but implementation is complex."
+  },
+  "49": {
+   "index": 49,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Tests a creative idea for predicting optimal regularization from early dynamics."
+  },
+  "50": {
+   "index": 50,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Explores hyperparameter clustering but overlaps with general architecture-specific tuning studies."
+  },
+  "51": {
+   "index": 51,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Novel staged regularization idea, feasible on small datasets, fits failure mode exploration."
+  },
+  "52": {
+   "index": 52,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates kernel size ordering, a novel hypothesis with clear small-dataset applicability."
+  },
+  "53": {
+   "index": 53,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Depth-width scaling is interesting but overlaps with prior architecture optimization studies."
+  },
+  "54": {
+   "index": 54,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": 50,
+   "reason": "Substantially duplicates idea 50 with minor differences in scope."
+  },
+  "55": {
+   "index": 55,
+   "manifestability": 5,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Scheduling augmentation strength is novel, feasible, and fits failure mode exploration."
+  },
+  "56": {
+   "index": 56,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 51,
+   "reason": "Overlaps with idea 51 but focuses on temporal sequencing rather than within-batch staging."
+  },
+  "57": {
+   "index": 57,
+   "manifestability": 5,
+   "feasibility": 4,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": 55,
+   "reason": "Duplicates idea 55 with minor rephrasing of augmentation scheduling hypothesis."
+  },
+  "58": {
+   "index": 58,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": 53,
+   "reason": "Duplicates idea 53 with minor rephrasing of depth-width scaling hypothesis."
+  },
+  "59": {
+   "index": 59,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Novel use of early training dynamics for architecture selection, feasible on small datasets."
+  },
+  "60": {
+   "index": 60,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Explores confidence biases in small datasets, novel and fits failure mode theme."
+  },
+  "61": {
+   "index": 61,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Adaptive learning rates based on manifold density is novel and feasible for small datasets."
+  },
+  "62": {
+   "index": 62,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Decoupling loss functions for sample selection and updates is novel and fits failure mode theme."
+  },
+  "63": {
+   "index": 63,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Consistent augmentation ordering is novel, feasible, and fits failure mode exploration."
+  },
+  "64": {
+   "index": 64,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Smooth activation functions as regularizers is feasible and fits small-dataset generalization."
+  },
+  "65": {
+   "index": 65,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Class learning imbalance is novel, feasible, and fits failure mode exploration."
+  },
+  "66": {
+   "index": 66,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": 64,
+   "reason": "Duplicates idea 64 with minor rephrasing of smooth activation hypothesis."
+  },
+  "67": {
+   "index": 67,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Gradient clipping as regularization is novel, feasible, and fits failure mode exploration."
+  },
+  "68": {
+   "index": 68,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 2,
+   "icbinb_fit": 2,
+   "dup_of": 67,
+   "reason": "Duplicates idea 67 with minor rephrasing of gradient clipping hypothesis."
+  },
+  "69": {
+   "index": 69,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Confidence-maximizing augmentation is novel, feasible, and fits failure mode exploration."
+  },
+  "70": {
+   "index": 70,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 56,
+   "reason": "Overlaps with idea 56 but focuses on staggered timing rather than temporal sequencing."
+  },
+  "71": {
+   "index": 71,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Inserting a computational pause is novel but may have limited manifestability on small datasets."
+  },
+  "72": {
+   "index": 72,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Data-aware initialization scaling is novel and fits failure mode exploration."
+  },
+  "73": {
+   "index": 73,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Brittleness signatures are novel, feasible, and fit failure mode diagnostics."
+  },
+  "74": {
+   "index": 74,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Diversity-driven stochasticity is novel but computationally complex for small datasets."
+  },
+  "75": {
+   "index": 75,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "The idea is feasible within the constraints, novel in its approach to gradient noise decomposition, and fits the theme by exploring potential failure modes in optimization."
+  }
+ },
+ "kimi-k2.5": {
+  "0": {
+   "index": 0,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Investigates unintended BN drift during fine-tuning, manifestable via statistic tracking but requires pre-trained models."
+  },
+  "1": {
+   "index": 1,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Challenges high-loss sample discarding under distribution shift, fitting ICBINB failure mode theme well."
+  },
+  "2": {
+   "index": 2,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests WD scheduling during warmup with simple scaling interventions on standard small datasets."
+  },
+  "3": {
+   "index": 3,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Examines augmentation harm under label noise with straightforward accuracy metrics on CIFAR."
+  },
+  "4": {
+   "index": 4,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Studies memorization amplification by augmentation under noise, clearly manifestable via per-sample loss tracking."
+  },
+  "5": {
+   "index": 5,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Proposes training statistics over validation loss for early stopping, highly relevant to small data failure modes."
+  },
+  "6": {
+   "index": 6,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 4,
+   "reason": "Duplicate of index 4 with identical hypothesis and experimental design."
+  },
+  "7": {
+   "index": 7,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Requires expensive Hessian eigenvector estimation, likely exceeding 1-hour budget despite small dataset."
+  },
+  "8": {
+   "index": 8,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Novel comparison of duplication versus augmentation strategies under label noise."
+  },
+  "9": {
+   "index": 9,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 7,
+   "reason": "Duplicate of index 7 sharing the same hypothesis and gradient alignment characterization approach."
+  },
+  "10": {
+   "index": 10,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests constant LR plateau duration with simple schedule modifications."
+  },
+  "11": {
+   "index": 11,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Duplicate of index 10 proposing the same LR plateau intervention after warmup."
+  },
+  "12": {
+   "index": 12,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 10,
+   "reason": "Duplicate of index 10 with identical experimental structure."
+  },
+  "13": {
+   "index": 13,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 5,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Novel application of compression metrics to representation learning with moderate computational overhead."
+  },
+  "14": {
+   "index": 14,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Proposes gzip compression ratio for early stopping, challenging standard validation-based approaches."
+  },
+  "15": {
+   "index": 15,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 14,
+   "reason": "Duplicate of index 14 proposing the same compressibility-based early stopping criterion."
+  },
+  "16": {
+   "index": 16,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Similarity batching requires per-epoch clustering, adding computational overhead but feasible on CIFAR-10."
+  },
+  "17": {
+   "index": 17,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple modification to SGD with alternating noise for calibration improvement."
+  },
+  "18": {
+   "index": 18,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests architecture-specific initialization schemes on small-scale vision transformers."
+  },
+  "19": {
+   "index": 19,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 17,
+   "reason": "Duplicate of index 17 testing identical oscillatory SGD modifications."
+  },
+  "20": {
+   "index": 20,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Focuses on calibration degradation rather than accuracy, distinct from other augmentation-noise studies."
+  },
+  "21": {
+   "index": 21,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": 14,
+   "reason": "Duplicate of index 14 replicating the compressibility early stopping hypothesis."
+  },
+  "22": {
+   "index": 22,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Tests fixed versus random augmentation order with minimal implementation complexity."
+  },
+  "23": {
+   "index": 23,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Requires 270+ full training runs, far exceeding 1-hour compute constraint."
+  },
+  "24": {
+   "index": 24,
+   "manifestability": 3,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Trajectory geometry analysis requires parameter snapshot storage and curvature computation, moderately expensive."
+  },
+  "25": {
+   "index": 25,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Clean hyperparameter ablation on BatchNorm gamma with measurable effects on CIFAR-10 within compute budget."
+  },
+  "26": {
+   "index": 26,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Single deterministic TTA reduces variance but requires held-out validation set selection within limited time."
+  },
+  "27": {
+   "index": 27,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Simple augmentation pipeline manipulation testing whether randomization actually helps empirical performance."
+  },
+  "28": {
+   "index": 28,
+   "manifestability": 5,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Explicitly tests regularization failure modes through combinatorial interference on small data."
+  },
+  "29": {
+   "index": 29,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Low-level optimizer modification testing weight decoupling order with likely minimal practical difference."
+  },
+  "30": {
+   "index": 30,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 29,
+   "reason": "Duplicate of index 29 with identical hypothesis and experimental structure."
+  },
+  "31": {
+   "index": 31,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 27,
+   "reason": "Duplicate of index 27 with identical experimental protocol and similar hypothesis."
+  },
+  "32": {
+   "index": 32,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Hessian eigenvector estimation via power iteration is prohibitively expensive for 1-hour compute budget."
+  },
+  "33": {
+   "index": 33,
+   "manifestability": 5,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Synthetic tasks may not generalize to real datasets but provide clear diagnostic signals within constraints."
+  },
+  "34": {
+   "index": 34,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Requires expensive gradient covariance tracking and Hessian eigenvector computation violating time constraints."
+  },
+  "35": {
+   "index": 35,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Adaptive scheduling of BN momentum tests whether fixed defaults are suboptimal for limited data."
+  },
+  "36": {
+   "index": 36,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Dynamic reordering of optimizer operations extends static ablations to time-dependent failure analysis."
+  },
+  "37": {
+   "index": 37,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Multiple retraining runs for noise sensitivity may approach time limit but feasible with reduced epochs."
+  },
+  "38": {
+   "index": 38,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Architecture modification requiring multiple full training runs of different ResNet variants."
+  },
+  "39": {
+   "index": 39,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Training ViT, ResNet, ConvMixer, and MLP-Mixer across subsets exceeds 1-hour single-GPU constraint."
+  },
+  "40": {
+   "index": 40,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Initialization scale ablation with trajectory tracking is lightweight and tests default He assumptions."
+  },
+  "41": {
+   "index": 41,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": 40,
+   "reason": "Duplicate of index 40 with identical title and nearly identical experimental protocol."
+  },
+  "42": {
+   "index": 42,
+   "manifestability": 4,
+   "feasibility": 4,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Batch size regularization is well-studied but confirms negative results for large batches on small data."
+  },
+  "43": {
+   "index": 43,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Curriculum learning applied to augmentation strength tests whether constant distortion is suboptimal."
+  },
+  "44": {
+   "index": 44,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 with identical hypothesis and experimental design."
+  },
+  "45": {
+   "index": 45,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 with identical title and experimental structure."
+  },
+  "46": {
+   "index": 46,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "CKA similarity computation and per-class tracking across three architectures likely exceeds time budget."
+  },
+  "47": {
+   "index": 47,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 43,
+   "reason": "Duplicate of index 43 with identical progressive augmentation scheduling concept."
+  },
+  "48": {
+   "index": 48,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Online confidence estimation and augmentation adjustment adds minimal overhead to standard training."
+  },
+  "49": {
+   "index": 49,
+   "manifestability": 4,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Grid search over regularization hyperparameters for ground truth collection requires excessive compute."
+  },
+  "50": {
+   "index": 50,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 2,
+   "dup_of": -1,
+   "reason": "Grid search across architecture families is manifest but heavy for 1 hour."
+  },
+  "51": {
+   "index": 51,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Intra-batch regularization staging is feasible and novel but success is uncertain."
+  },
+  "52": {
+   "index": 52,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Kernel ordering is easy to test and likely to show null or negative results."
+  },
+  "53": {
+   "index": 53,
+   "manifestability": 5,
+   "feasibility": 1,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "35+ training runs (5 depths × 7 sizes) vastly exceeds 1-hour budget."
+  },
+  "54": {
+   "index": 54,
+   "manifestability": 3,
+   "feasibility": 1,
+   "novelty": 3,
+   "icbinb_fit": 2,
+   "dup_of": 50,
+   "reason": "Duplicate of 50 with infeasible 720-run grid search."
+  },
+  "55": {
+   "index": 55,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Augmentation scheduling is feasible though curriculum augment is known."
+  },
+  "56": {
+   "index": 56,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Phased regularization is trivial to implement and test."
+  },
+  "57": {
+   "index": 57,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 55,
+   "reason": "Identical duplicate of idea 55."
+  },
+  "58": {
+   "index": 58,
+   "manifestability": 5,
+   "feasibility": 1,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 53,
+   "reason": "Identical duplicate of idea 53 with same infeasible scale."
+  },
+  "59": {
+   "index": 59,
+   "manifestability": 3,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Training 9+ architectures across subsets is too heavy for 1 hour."
+  },
+  "60": {
+   "index": 60,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Test-time analysis requires only inference and fits ICBINB failure-mode theme."
+  },
+  "61": {
+   "index": 61,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Nearest-neighbor overhead is manageable but effect may be subtle."
+  },
+  "62": {
+   "index": 62,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Dual loss mechanism is implementable but manifestability depends on small data overfitting."
+  },
+  "63": {
+   "index": 63,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Fixed vs random augmentation order is trivial to test and likely a null result."
+  },
+  "64": {
+   "index": 64,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": -1,
+   "reason": "Activation function comparison is well-trodden and likely shows minor differences."
+  },
+  "65": {
+   "index": 65,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Per-class tracking is easy and imbalance diagnostics fit negative results."
+  },
+  "66": {
+   "index": 66,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 2,
+   "icbinb_fit": 3,
+   "dup_of": 64,
+   "reason": "Identical duplicate of idea 64."
+  },
+  "67": {
+   "index": 67,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Threshold sweep requires multiple runs pushing 1-hour limit."
+  },
+  "68": {
+   "index": 68,
+   "manifestability": 4,
+   "feasibility": 3,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": 67,
+   "reason": "Identical duplicate of idea 67."
+  },
+  "69": {
+   "index": 69,
+   "manifestability": 5,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Max-confidence TTA is simple inference-time test likely to show failure."
+  },
+  "70": {
+   "index": 70,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 3,
+   "dup_of": 56,
+   "reason": "Identical duplicate of idea 56 (staggered vs temporal sequencing)."
+  },
+  "71": {
+   "index": 71,
+   "manifestability": 3,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Forward-backward intervening step is easy to add and likely provides no benefit."
+  },
+  "72": {
+   "index": 72,
+   "manifestability": 5,
+   "feasibility": 2,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "56-run sweep (8 scales × 7 sizes) is infeasible in 1 hour."
+  },
+  "73": {
+   "index": 73,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 4,
+   "icbinb_fit": 5,
+   "dup_of": -1,
+   "reason": "Brittleness diagnostics are lightweight evaluations perfect for failure mode analysis."
+  },
+  "74": {
+   "index": 74,
+   "manifestability": 3,
+   "feasibility": 4,
+   "novelty": 4,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "Adaptive noise requires feature monitoring but is tractable."
+  },
+  "75": {
+   "index": 75,
+   "manifestability": 4,
+   "feasibility": 5,
+   "novelty": 3,
+   "icbinb_fit": 4,
+   "dup_of": -1,
+   "reason": "ResNet-18 on CIFAR-10 subsets is feasible within one hour and the generalization effect is measurable without saturation, though the gradient decomposition approach parallels existing variance-reduction methods and likely fails to show consistent improvements on small datasets, fitting the negative results theme."
+  }
+ }
+}

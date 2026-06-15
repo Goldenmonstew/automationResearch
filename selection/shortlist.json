@@ -1,0 +1,827 @@
+[
+ {
+  "index": 28,
+  "name": "regularization_interference_small_data",
+  "title": "The Regularization Interference Effect: When Combined Regularizers Hurt More Than Help on Small Datasets",
+  "manifestability": 4.67,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 5.0,
+  "total": 18.01,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Directly tests interference between regularizers, fitting ICBINB theme.",
+   "gpt-4o": "Investigates a potential failure mode of combining regularizers on small datasets.",
+   "kimi-k2.5": "Explicitly tests regularization failure modes through combinatorial interference on small data."
+  },
+  "merged_indices": [
+   28
+  ]
+ },
+ {
+  "index": 73,
+  "name": "brittleness_signatures_diagnostic",
+  "title": "The Brittleness Signature: Simple Diagnostic Tests for Evaluating Small-Dataset Models",
+  "manifestability": 4.33,
+  "feasibility": 4.67,
+  "novelty": 4.0,
+  "icbinb_fit": 5.0,
+  "total": 18.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Excellent ICBINB fit: diagnostic tests for brittleness are clear and fast to run.",
+   "gpt-4o": "Brittleness signatures are novel, feasible, and fit failure mode diagnostics.",
+   "kimi-k2.5": "Brittleness diagnostics are lightweight evaluations perfect for failure mode analysis."
+  },
+  "merged_indices": [
+   73
+  ]
+ },
+ {
+  "index": 37,
+  "name": "label_noise_diagnostic",
+  "title": "Noise as a Litmus Test: Using Controlled Label Noise to Predict Generalization on Small Datasets",
+  "manifestability": 4.67,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.67,
+  "total": 17.68,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Label noise as a diagnostic directly fits ICBINB and is highly feasible.",
+   "gpt-4o": "Uses label noise as a diagnostic for generalization, fitting the negative results theme.",
+   "kimi-k2.5": "Multiple retraining runs for noise sensitivity may approach time limit but feasible with reduced epochs."
+  },
+  "merged_indices": [
+   37
+  ]
+ },
+ {
+  "index": 33,
+  "name": "memorization_vs_learning_diagnostic",
+  "title": "The Memorization Test: Can Simple Synthetic Tasks Distinguish Learning from Memorization on Small Datasets?",
+  "manifestability": 5.0,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.33,
+  "total": 17.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Clear synthetic tasks to diagnose memorization vs. learning.",
+   "gpt-4o": "Tests a creative diagnostic for distinguishing learning from memorization.",
+   "kimi-k2.5": "Synthetic tasks may not generalize to real datasets but provide clear diagnostic signals within constraints."
+  },
+  "merged_indices": [
+   33
+  ]
+ },
+ {
+  "index": 3,
+  "name": "augmentation_noise_interaction",
+  "title": "The Augmentation Paradox: When Simple Data Augmentations Amplify Label Noise Harm on Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.67,
+  "total": 17.34,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Clear paradox on small noisy datasets, highly feasible.",
+   "gpt-4o": "Examines augmentation effects under label noise, fitting the theme and feasible on CIFAR-10.",
+   "kimi-k2.5": "Examines augmentation harm under label noise with straightforward accuracy metrics on CIFAR."
+  },
+  "merged_indices": [
+   3,
+   4,
+   6
+  ]
+ },
+ {
+  "index": 8,
+  "name": "duplication_vs_augmentation_noise",
+  "title": "Reinforce or Diversify? Selective Sample Duplication Outperforms Standard Augmentation Under Label Noise",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 4.0,
+  "icbinb_fit": 4.67,
+  "total": 17.34,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Novel intervention contrasting duplication vs. augmentation.",
+   "gpt-4o": "Selective duplication under label noise is novel and fits the theme well.",
+   "kimi-k2.5": "Novel comparison of duplication versus augmentation strategies under label noise."
+  },
+  "merged_indices": [
+   8
+  ]
+ },
+ {
+  "index": 20,
+  "name": "calibration_under_augmentation_noise",
+  "title": "The Calibration Paradox: Why Data Augmentation Worsens Calibration Under Label Noise",
+  "manifestability": 4.33,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.67,
+  "total": 17.34,
+  "n_judges": 3,
+  "dup_of_votes": [
+   3
+  ],
+  "reasons": {
+   "deepseek-v3.2": "Extends idea 3's augmentation-noise paradox to calibration.",
+   "gpt-4o": "Examines augmentation effects on calibration under label noise, fitting the theme well.",
+   "kimi-k2.5": "Focuses on calibration degradation rather than accuracy, distinct from other augmentation-noise studies."
+  },
+  "merged_indices": [
+   20
+  ]
+ },
+ {
+  "index": 1,
+  "name": "high_loss_samples_shift",
+  "title": "The Informative Noise: Can High-Loss Samples Under Label Noise Be Crucial for Distribution Shift Robustness?",
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 4.0,
+  "icbinb_fit": 5.0,
+  "total": 17.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Directly tests a counterintuitive failure mode on small datasets.",
+   "gpt-4o": "Focuses on label noise and distribution shift, fitting the theme and feasible on CIFAR-10.",
+   "kimi-k2.5": "Challenges high-loss sample discarding under distribution shift, fitting ICBINB failure mode theme well."
+  },
+  "merged_indices": [
+   1
+  ]
+ },
+ {
+  "index": 69,
+  "name": "confidence_maximizing_augmentation",
+  "title": "Confidence-Maximizing Augmentation: A Simple Inference-Time Trick for Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.33,
+  "total": 17.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple inference-time trick, easy to test with minimal compute.",
+   "gpt-4o": "Confidence-maximizing augmentation is novel, feasible, and fits failure mode exploration.",
+   "kimi-k2.5": "Max-confidence TTA is simple inference-time test likely to show failure."
+  },
+  "merged_indices": [
+   69
+  ]
+ },
+ {
+  "index": 13,
+  "name": "representation_compressibility_generalization",
+  "title": "The Compression Test: Does Representation Compressibility Predict Generalization During Training?",
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 4.67,
+  "icbinb_fit": 4.0,
+  "total": 16.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Novel compressibility metric, though storage/compression adds overhead.",
+   "gpt-4o": "Proposes representation compressibility as a generalization metric, novel and feasible.",
+   "kimi-k2.5": "Novel application of compression metrics to representation learning with moderate computational overhead."
+  },
+  "merged_indices": [
+   13
+  ]
+ },
+ {
+  "index": 25,
+  "name": "gamma_init_weight_decay",
+  "title": "The Forgotten Knob: Tuning BatchNorm Gamma Initialization to Modulate Weight Decay's Channel-Wise Regularization",
+  "manifestability": 4.33,
+  "feasibility": 5.0,
+  "novelty": 3.67,
+  "icbinb_fit": 3.67,
+  "total": 16.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Novel investigation of gamma init's interaction with weight decay on small datasets.",
+   "gpt-4o": "Explores a rarely studied interaction between BatchNorm initialization and weight decay on small datasets.",
+   "kimi-k2.5": "Clean hyperparameter ablation on BatchNorm gamma with measurable effects on CIFAR-10 within compute budget."
+  },
+  "merged_indices": [
+   25
+  ]
+ },
+ {
+  "index": 40,
+  "name": "init_scale_trajectory",
+  "title": "The First Step Matters Most: How Initial Weight Scale Sculpts Optimization Trajectories and Generalization on Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 5.0,
+  "novelty": 3.67,
+  "icbinb_fit": 3.67,
+  "total": 16.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Investigates initialization scale on small datasets.",
+   "gpt-4o": "Examines the underexplored role of initialization scale on optimization trajectories.",
+   "kimi-k2.5": "Initialization scale ablation with trajectory tracking is lightweight and tests default He assumptions."
+  },
+  "merged_indices": [
+   40,
+   41
+  ]
+ },
+ {
+  "index": 60,
+  "name": "test_time_simplicity_gap",
+  "title": "The Test-Time Simplicity Gap: How Small-Dataset Training Leads to Overconfident Predictions on Simple Test Samples",
+  "manifestability": 3.67,
+  "feasibility": 4.0,
+  "novelty": 4.0,
+  "icbinb_fit": 5.0,
+  "total": 16.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Interesting failure mode hypothesis, but defining 'simplicity' robustly is challenging.",
+   "gpt-4o": "Explores confidence biases in small datasets, novel and fits failure mode theme.",
+   "kimi-k2.5": "Test-time analysis requires only inference and fits ICBINB failure-mode theme."
+  },
+  "merged_indices": [
+   60
+  ]
+ },
+ {
+  "index": 65,
+  "name": "class_learning_order_imbalance",
+  "title": "The Learning Order Imbalance: How Uneven Class Learning Dynamics Harm Generalization on Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 4.33,
+  "novelty": 3.67,
+  "icbinb_fit": 4.67,
+  "total": 16.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Clear hypothesis about class learning imbalance, a good failure mode to study.",
+   "gpt-4o": "Class learning imbalance is novel, feasible, and fits failure mode exploration.",
+   "kimi-k2.5": "Per-class tracking is easy and imbalance diagnostics fit negative results."
+  },
+  "merged_indices": [
+   65
+  ]
+ },
+ {
+  "index": 14,
+  "name": "compressibility_early_stopping",
+  "title": "Stop When It Compresses: Representation Compressibility as an Early Stopping Criterion for Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 4.33,
+  "icbinb_fit": 4.33,
+  "total": 16.66,
+  "n_judges": 3,
+  "dup_of_votes": [
+   13
+  ],
+  "reasons": {
+   "deepseek-v3.2": "Applies compressibility from idea 13 to early stopping.",
+   "gpt-4o": "Uses compressibility for early stopping, fitting the theme and feasible.",
+   "kimi-k2.5": "Proposes gzip compression ratio for early stopping, challenging standard validation-based approaches."
+  },
+  "merged_indices": [
+   14,
+   15,
+   21
+  ]
+ },
+ {
+  "index": 63,
+  "name": "augmentation_order_consistency_small_data",
+  "title": "The Augmentation Pathway: Does Consistent Ordering of Data Augmentations Improve Generalization on Small Datasets?",
+  "manifestability": 4.33,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.33,
+  "total": 16.66,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple, clean test of augmentation ordering consistency on CIFAR-10.",
+   "gpt-4o": "Consistent augmentation ordering is novel, feasible, and fits failure mode exploration.",
+   "kimi-k2.5": "Fixed vs random augmentation order is trivial to test and likely a null result."
+  },
+  "merged_indices": [
+   63
+  ]
+ },
+ {
+  "index": 22,
+  "name": "augmentation_order_matters",
+  "title": "The Augmentation Pathway: Does Consistent Ordering of Data Augmentations Improve Generalization on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.67,
+  "icbinb_fit": 4.0,
+  "total": 16.34,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Tests a subtle, often overlooked aspect of augmentation pipelines.",
+   "gpt-4o": "Investigates augmentation order effects, novel and feasible on CIFAR-10.",
+   "kimi-k2.5": "Tests fixed versus random augmentation order with minimal implementation complexity."
+  },
+  "merged_indices": [
+   22
+  ]
+ },
+ {
+  "index": 5,
+  "name": "training_stats_early_stopping",
+  "title": "The Training Oracle: Can Simple Training Statistics Outperform Validation Loss for Early Stopping on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 4.0,
+  "icbinb_fit": 4.33,
+  "total": 16.33,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Tests a practical failure mode of validation on small data.",
+   "gpt-4o": "Proposes training statistics for early stopping, feasible and fitting the theme.",
+   "kimi-k2.5": "Proposes training statistics over validation loss for early stopping, highly relevant to small data failure modes."
+  },
+  "merged_indices": [
+   5
+  ]
+ },
+ {
+  "index": 17,
+  "name": "oscillatory_training_calibration",
+  "title": "The Calibration Shake: Can Small Intentional Oscillations in Optimization Improve Model Calibration?",
+  "manifestability": 4.0,
+  "feasibility": 4.33,
+  "novelty": 4.0,
+  "icbinb_fit": 4.0,
+  "total": 16.33,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple oscillatory perturbation to test calibration improvement.",
+   "gpt-4o": "Explores oscillatory SGD effects, novel and fitting the theme.",
+   "kimi-k2.5": "Simple modification to SGD with alternating noise for calibration improvement."
+  },
+  "merged_indices": [
+   17,
+   19
+  ]
+ },
+ {
+  "index": 35,
+  "name": "bn_momentum_small_data",
+  "title": "The Right Momentum: Adaptive Batch Normalization Momentum for Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 5.0,
+  "novelty": 3.33,
+  "icbinb_fit": 3.67,
+  "total": 16.33,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Adaptive BN momentum for small datasets is feasible and testable.",
+   "gpt-4o": "Tests a straightforward modification to BatchNorm momentum for small datasets.",
+   "kimi-k2.5": "Adaptive scheduling of BN momentum tests whether fixed defaults are suboptimal for limited data."
+  },
+  "merged_indices": [
+   35
+  ]
+ },
+ {
+  "index": 2,
+  "name": "warmup_weight_decay_interaction",
+  "title": "The Warmup Dilemma: Does Early Weight Decay During Learning Rate Warmup Harm Generalization on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 16.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple, feasible intervention on a common hyperparameter practice.",
+   "gpt-4o": "Explores weight decay during warmup, feasible on small datasets and novel.",
+   "kimi-k2.5": "Tests WD scheduling during warmup with simple scaling interventions on standard small datasets."
+  },
+  "merged_indices": [
+   2
+  ]
+ },
+ {
+  "index": 10,
+  "name": "lr_plateau_after_warmup",
+  "title": "The Learning Rate Plateau: Does Stalling Learning Rate Decay After Warmup Improve Generalization on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 16.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple, feasible LR schedule modification for small datasets.",
+   "gpt-4o": "Explores learning rate plateau effects, feasible and fitting the theme.",
+   "kimi-k2.5": "Tests constant LR plateau duration with simple schedule modifications."
+  },
+  "merged_indices": [
+   10,
+   11,
+   12
+  ]
+ },
+ {
+  "index": 27,
+  "name": "augmentation_order_consistency",
+  "title": "Consistency Matters: Why Fixed-Order Data Augmentation Improves Generalization on Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 5.0,
+  "novelty": 3.33,
+  "icbinb_fit": 3.67,
+  "total": 16.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Tests fixed vs. random augmentation order on small datasets.",
+   "gpt-4o": "Tests a plausible hypothesis about augmentation order effects on small datasets.",
+   "kimi-k2.5": "Simple augmentation pipeline manipulation testing whether randomization actually helps empirical performance."
+  },
+  "merged_indices": [
+   27,
+   31
+  ]
+ },
+ {
+  "index": 52,
+  "name": "kernel_placement_small_data",
+  "title": "The Receptive Field Timeline: Does Placing Larger Kernels Early Improve Generalization on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 16.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple, controlled CNN variants can clearly test kernel placement on CIFAR-10.",
+   "gpt-4o": "Investigates kernel size ordering, a novel hypothesis with clear small-dataset applicability.",
+   "kimi-k2.5": "Kernel ordering is easy to test and likely to show null or negative results."
+  },
+  "merged_indices": [
+   52
+  ]
+ },
+ {
+  "index": 75,
+  "name": "gradient_noise_decomposition",
+  "title": "Cleaning the Noise: Selective Suppression of Harmful Gradient Noise Components for Small-Dataset Generalization",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 16.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "The idea is a clear, testable modification of SGD that could show a measurable effect on CIFAR-10 subsets within the time and compute constraints.",
+   "gpt-4o": "The idea is feasible within the constraints, novel in its approach to gradient noise decomposition, and fits the theme by exploring potential failure modes in optimization.",
+   "kimi-k2.5": "ResNet-18 on CIFAR-10 subsets is feasible within one hour and the generalization effect is measurable without saturation, though the gradient decomposition approach parallels existing variance-reduction methods and likely fails to show consistent improvements on small datasets, fitting the negative results theme."
+  },
+  "merged_indices": [
+   75
+  ]
+ },
+ {
+  "index": 55,
+  "name": "augmentation_strength_scheduling",
+  "title": "Schedule the Noise: Why Data Augmentation Strength Should Be Scheduled Like Learning Rate for Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 4.33,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 15.99,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Clear hypothesis about augmentation scheduling that is testable on CIFAR-10.",
+   "gpt-4o": "Scheduling augmentation strength is novel, feasible, and fits failure mode exploration.",
+   "kimi-k2.5": "Augmentation scheduling is feasible though curriculum augment is known."
+  },
+  "merged_indices": [
+   55,
+   57
+  ]
+ },
+ {
+  "index": 51,
+  "name": "staged_batch_regularization",
+  "title": "The Order Within: How Staging Regularization Within a Training Batch Improves Small-Dataset Generalization",
+  "manifestability": 3.67,
+  "feasibility": 4.33,
+  "novelty": 3.67,
+  "icbinb_fit": 4.0,
+  "total": 15.67,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Tests a specific, implementable hypothesis about regularization staging within a batch.",
+   "gpt-4o": "Novel staged regularization idea, feasible on small datasets, fits failure mode exploration.",
+   "kimi-k2.5": "Intra-batch regularization staging is feasible and novel but success is uncertain."
+  },
+  "merged_indices": [
+   51
+  ]
+ },
+ {
+  "index": 23,
+  "name": "weight_decay_scaling_law",
+  "title": "One Hyperparameter to Rule Them All? A Scaling Law for Weight Decay on Small Datasets",
+  "manifestability": 4.33,
+  "feasibility": 3.33,
+  "novelty": 4.0,
+  "icbinb_fit": 4.0,
+  "total": 15.66,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Large hyperparameter sweep but highly relevant to small datasets.",
+   "gpt-4o": "Proposes a scaling law for weight decay, novel and fitting the theme.",
+   "kimi-k2.5": "Requires 270+ full training runs, far exceeding 1-hour compute constraint."
+  },
+  "merged_indices": [
+   23
+  ]
+ },
+ {
+  "index": 43,
+  "name": "progressive_augmentation_scheduling",
+  "title": "Progressive Augmentation Scheduling: Growing Data Distortion as Training Progresses for Better Small-Dataset Generalization",
+  "manifestability": 4.33,
+  "feasibility": 5.0,
+  "novelty": 3.0,
+  "icbinb_fit": 3.33,
+  "total": 15.66,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Progressive augmentation scheduling for small datasets.",
+   "gpt-4o": "Explores progressive augmentation scheduling, a plausible but less novel idea.",
+   "kimi-k2.5": "Curriculum learning applied to augmentation strength tests whether constant distortion is suboptimal."
+  },
+  "merged_indices": [
+   43,
+   44,
+   45,
+   47
+  ]
+ },
+ {
+  "index": 67,
+  "name": "gradient_clipping_regularization_small_data",
+  "title": "Clipping the Outliers: Gradient Clipping as Unexpected Regularization on Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 3.33,
+  "icbinb_fit": 4.33,
+  "total": 15.66,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Simple gradient clipping sweep, easy to implement and test on CIFAR-10.",
+   "gpt-4o": "Gradient clipping as regularization is novel, feasible, and fits failure mode exploration.",
+   "kimi-k2.5": "Threshold sweep requires multiple runs pushing 1-hour limit."
+  },
+  "merged_indices": [
+   67,
+   68
+  ]
+ },
+ {
+  "index": 16,
+  "name": "similarity_batching_generalization",
+  "title": "The Challenge Batch: Does Grouping Similar Samples Improve Generalization on Small Datasets?",
+  "manifestability": 3.67,
+  "feasibility": 3.67,
+  "novelty": 4.0,
+  "icbinb_fit": 4.0,
+  "total": 15.34,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Requires pretrained features or clustering, adding complexity.",
+   "gpt-4o": "Investigates batching strategies, novel and feasible on CIFAR-10.",
+   "kimi-k2.5": "Similarity batching requires per-epoch clustering, adding computational overhead but feasible on CIFAR-10."
+  },
+  "merged_indices": [
+   16
+  ]
+ },
+ {
+  "index": 29,
+  "name": "optimizer_step_order",
+  "title": "Before or After? How the Order of Operations Within Optimizer Steps Affects Generalization on Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 3.33,
+  "total": 15.33,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Investigates optimizer operation order on small datasets.",
+   "gpt-4o": "Examines an underexplored aspect of optimizer step ordering on small datasets.",
+   "kimi-k2.5": "Low-level optimizer modification testing weight decoupling order with likely minimal practical difference."
+  },
+  "merged_indices": [
+   29,
+   30
+  ]
+ },
+ {
+  "index": 56,
+  "name": "regularization_temporal_ordering",
+  "title": "The Order of Operations: Does Temporal Sequencing of Regularization Techniques Improve Small-Dataset Generalization?",
+  "manifestability": 3.67,
+  "feasibility": 4.33,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "total": 15.33,
+  "n_judges": 3,
+  "dup_of_votes": [
+   51
+  ],
+  "reasons": {
+   "deepseek-v3.2": "Tests a specific temporal ordering of regularizers, feasible with ResNet-18.",
+   "gpt-4o": "Overlaps with idea 51 but focuses on temporal sequencing rather than within-batch staging.",
+   "kimi-k2.5": "Phased regularization is trivial to implement and test."
+  },
+  "merged_indices": [
+   56,
+   70
+  ]
+ },
+ {
+  "index": 62,
+  "name": "loss_decoupling_small_data",
+  "title": "Breaking the Symmetry: Decoupling Sample Selection from Parameter Update with Dual Loss Functions for Small Datasets",
+  "manifestability": 3.33,
+  "feasibility": 3.67,
+  "novelty": 4.0,
+  "icbinb_fit": 4.33,
+  "total": 15.33,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Complex training loop modification but tests an interesting decoupling hypothesis.",
+   "gpt-4o": "Decoupling loss functions for sample selection and updates is novel and fits failure mode theme.",
+   "kimi-k2.5": "Dual loss mechanism is implementable but manifestability depends on small data overfitting."
+  },
+  "merged_indices": [
+   62
+  ]
+ },
+ {
+  "index": 38,
+  "name": "skip_density_small_data",
+  "title": "Dense or Sparse? How Skip Connection Density Shapes Small-Dataset Learning Dynamics",
+  "manifestability": 4.33,
+  "feasibility": 4.33,
+  "novelty": 3.33,
+  "icbinb_fit": 3.33,
+  "total": 15.32,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Architectural modification of skip connection density.",
+   "gpt-4o": "Tests the impact of skip connection density on small-dataset generalization.",
+   "kimi-k2.5": "Architecture modification requiring multiple full training runs of different ResNet variants."
+  },
+  "merged_indices": [
+   38
+  ]
+ },
+ {
+  "index": 46,
+  "name": "architectural_learning_dynamics",
+  "title": "The Early Bird Gets the Feature: How Architectural Inductive Biases Shape Early Learning Dynamics on Small Datasets",
+  "manifestability": 4.0,
+  "feasibility": 3.67,
+  "novelty": 3.67,
+  "icbinb_fit": 3.67,
+  "total": 15.01,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Architectural learning dynamics requires multiple models and detailed tracking.",
+   "gpt-4o": "Investigates how architectural biases shape early learning dynamics on small datasets.",
+   "kimi-k2.5": "CKA similarity computation and per-class tracking across three architectures likely exceeds time budget."
+  },
+  "merged_indices": [
+   46
+  ]
+ },
+ {
+  "index": 64,
+  "name": "activation_smoothness_regularization",
+  "title": "The Activation Filter: Do Smoother Activations Act as Implicit Regularizers on Small Datasets?",
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 2.67,
+  "icbinb_fit": 3.67,
+  "total": 15.01,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Straightforward drop-in activation function test on small CIFAR subsets.",
+   "gpt-4o": "Smooth activation functions as regularizers is feasible and fits small-dataset generalization.",
+   "kimi-k2.5": "Activation function comparison is well-trodden and likely shows minor differences."
+  },
+  "merged_indices": [
+   64,
+   66
+  ]
+ },
+ {
+  "index": 36,
+  "name": "optimizer_operation_scheduling",
+  "title": "Time-Dependent Optimizer Scheduling: Dynamically Reordering Operations for Better Small-Dataset Generalization",
+  "manifestability": 3.33,
+  "feasibility": 4.33,
+  "novelty": 3.67,
+  "icbinb_fit": 3.67,
+  "total": 15.0,
+  "n_judges": 3,
+  "dup_of_votes": [
+   29
+  ],
+  "reasons": {
+   "deepseek-v3.2": "Extends optimizer order idea with dynamic scheduling.",
+   "gpt-4o": "Investigates dynamic optimizer operation scheduling, a novel but complex idea.",
+   "kimi-k2.5": "Dynamic reordering of optimizer operations extends static ablations to time-dependent failure analysis."
+  },
+  "merged_indices": [
+   36
+  ]
+ },
+ {
+  "index": 42,
+  "name": "batch_size_regularization_small_data",
+  "title": "The Small-Batch Advantage: How Batch Size Serves as an Implicit Regularizer on Small Datasets",
+  "manifestability": 4.67,
+  "feasibility": 4.67,
+  "novelty": 2.33,
+  "icbinb_fit": 3.33,
+  "total": 15.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Well-known batch size effect, but clean test on small datasets.",
+   "gpt-4o": "Tests a well-known hypothesis about small batch sizes as implicit regularizers.",
+   "kimi-k2.5": "Batch size regularization is well-studied but confirms negative results for large batches on small data."
+  },
+  "merged_indices": [
+   42
+  ]
+ },
+ {
+  "index": 71,
+  "name": "forward_backward_pause",
+  "title": "The Thinking Gap: Inserting a Computational Pause Between Forward and Backward Passes for Better Small-Dataset Learning",
+  "manifestability": 3.0,
+  "feasibility": 3.67,
+  "novelty": 4.0,
+  "icbinb_fit": 4.33,
+  "total": 15.0,
+  "n_judges": 3,
+  "dup_of_votes": [],
+  "reasons": {
+   "deepseek-v3.2": "Interesting 'thinking gap' hypothesis, but implementation adds training complexity.",
+   "gpt-4o": "Inserting a computational pause is novel but may have limited manifestability on small datasets.",
+   "kimi-k2.5": "Forward-backward intervening step is easy to add and likely provides no benefit."
+  },
+  "merged_indices": [
+   71
+  ]
+ }
+]

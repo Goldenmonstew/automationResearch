@@ -1,0 +1,415 @@
+[
+ {
+  "index": 28,
+  "title": "The Regularization Interference Effect: When Combined Regularizers Hurt More Than Help on Small Datasets",
+  "consensus": 17.75,
+  "sources": {
+   "router:deepseek-v3.2": 18.0,
+   "router:gpt-4o": 19.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_b": 17.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 73,
+  "title": "The Brittleness Signature: Simple Diagnostic Tests for Evaluating Small-Dataset Models",
+  "consensus": 17.5,
+  "sources": {
+   "router:deepseek-v3.2": 19.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 18.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 20,
+  "title": "The Calibration Paradox: Why Data Augmentation Worsens Calibration Under Label Noise",
+  "consensus": 17.5,
+  "sources": {
+   "router:deepseek-v3.2": 19.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_b": 18.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 37,
+  "title": "Noise as a Litmus Test: Using Controlled Label Noise to Predict Generalization on Small Datasets",
+  "consensus": 17.0,
+  "sources": {
+   "router:deepseek-v3.2": 19.0,
+   "router:gpt-4o": 19.0,
+   "router:kimi-k2.5": 15.0,
+   "panel_b": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 8,
+  "title": "Reinforce or Diversify? Selective Sample Duplication Outperforms Standard Augmentation Under Label Noise",
+  "consensus": 17.0,
+  "sources": {
+   "router:deepseek-v3.2": 18.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 1,
+  "title": "The Informative Noise: Can High-Loss Samples Under Label Noise Be Crucial for Distribution Shift Robustness?",
+  "consensus": 17.0,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 17.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 33,
+  "title": "The Memorization Test: Can Simple Synthetic Tasks Distinguish Learning from Memorization on Small Datasets?",
+  "consensus": 16.75,
+  "sources": {
+   "router:deepseek-v3.2": 18.0,
+   "router:gpt-4o": 19.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 14.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 3,
+  "title": "The Augmentation Paradox: When Simple Data Augmentations Amplify Label Noise Harm on Small Datasets",
+  "consensus": 16.75,
+  "sources": {
+   "router:deepseek-v3.2": 19.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 69,
+  "title": "Confidence-Maximizing Augmentation: A Simple Inference-Time Trick for Small Datasets",
+  "consensus": 16.75,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 5,
+  "title": "The Training Oracle: Can Simple Training Statistics Outperform Validation Loss for Early Stopping on Small Datasets?",
+  "consensus": 16.4,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_a": 17.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": "重负载:含 DistilBERT/SST-2 文本 leg(T2 creep)→ 若入选须删文本 leg 只留 vision"
+ },
+ {
+  "index": 22,
+  "title": "The Augmentation Pathway: Does Consistent Ordering of Data Augmentations Improve Generalization on Small Datasets?",
+  "consensus": 16.33,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 35,
+  "title": "The Right Momentum: Adaptive Batch Normalization Momentum for Small Datasets",
+  "consensus": 16.33,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 17.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 14,
+  "title": "Stop When It Compresses: Representation Compressibility as an Early Stopping Criterion for Small Datasets",
+  "consensus": 16.25,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_a": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 2,
+  "title": "The Warmup Dilemma: Does Early Weight Decay During Learning Rate Warmup Harm Generalization on Small Datasets?",
+  "consensus": 16.25,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 17.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 40,
+  "title": "The First Step Matters Most: How Initial Weight Scale Sculpts Optimization Trajectories and Generalization on Small Datasets",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 18.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_a": 14.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 60,
+  "title": "The Test-Time Simplicity Gap: How Small-Dataset Training Leads to Overconfident Predictions on Simple Test Samples",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 18.0,
+   "panel_a": 14.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 65,
+  "title": "The Learning Order Imbalance: How Uneven Class Learning Dynamics Harm Generalization on Small Datasets",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 14.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 10,
+  "title": "The Learning Rate Plateau: Does Stalling Learning Rate Decay After Warmup Improve Generalization on Small Datasets?",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 52,
+  "title": "The Receptive Field Timeline: Does Placing Larger Kernels Early Improve Generalization on Small Datasets?",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 55,
+  "title": "Schedule the Noise: Why Data Augmentation Strength Should Be Scheduled Like Learning Rate for Small Datasets",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 18.0,
+   "router:kimi-k2.5": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 38,
+  "title": "Dense or Sparse? How Skip Connection Density Shapes Small-Dataset Learning Dynamics",
+  "consensus": 16.0,
+  "sources": {
+   "router:deepseek-v3.2": 14.0,
+   "router:gpt-4o": 18.0,
+   "router:kimi-k2.5": 14.0,
+   "panel_a": 18.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 25,
+  "title": "The Forgotten Knob: Tuning BatchNorm Gamma Initialization to Modulate Weight Decay's Channel-Wise Regularization",
+  "consensus": 15.75,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 18.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_a": 13.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 67,
+  "title": "Clipping the Outliers: Gradient Clipping as Unexpected Regularization on Small Datasets",
+  "consensus": 15.75,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 14.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 51,
+  "title": "The Order Within: How Staging Regularization Within a Training Batch Improves Small-Dataset Generalization",
+  "consensus": 15.67,
+  "sources": {
+   "router:deepseek-v3.2": 14.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 75,
+  "title": "Cleaning the Noise: Selective Suppression of Harmful Gradient Noise Components for Small-Dataset Generalization",
+  "consensus": 15.6,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 15.0,
+   "panel_b": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 17,
+  "title": "The Calibration Shake: Can Small Intentional Oscillations in Optimization Improve Model Calibration?",
+  "consensus": 15.5,
+  "sources": {
+   "router:deepseek-v3.2": 16.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 17.0,
+   "panel_a": 13.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 27,
+  "title": "Consistency Matters: Why Fixed-Order Data Augmentation Improves Generalization on Small Datasets",
+  "consensus": 15.5,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 14.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 43,
+  "title": "Progressive Augmentation Scheduling: Growing Data Distortion as Training Progresses for Better Small-Dataset Generalization",
+  "consensus": 15.5,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 15.0,
+   "panel_a": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 16,
+  "title": "The Challenge Batch: Does Grouping Similar Samples Improve Generalization on Small Datasets?",
+  "consensus": 15.33,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 56,
+  "title": "The Order of Operations: Does Temporal Sequencing of Regularization Techniques Improve Small-Dataset Generalization?",
+  "consensus": 15.33,
+  "sources": {
+   "router:deepseek-v3.2": 14.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 62,
+  "title": "Breaking the Symmetry: Decoupling Sample Selection from Parameter Update with Dual Loss Functions for Small Datasets",
+  "consensus": 15.33,
+  "sources": {
+   "router:deepseek-v3.2": 14.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 15.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 36,
+  "title": "Time-Dependent Optimizer Scheduling: Dynamically Reordering Operations for Better Small-Dataset Generalization",
+  "consensus": 15.25,
+  "sources": {
+   "router:deepseek-v3.2": 13.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 16.0,
+   "panel_a": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 42,
+  "title": "The Small-Batch Advantage: How Batch Size Serves as an Implicit Regularizer on Small Datasets",
+  "consensus": 15.25,
+  "sources": {
+   "router:deepseek-v3.2": 15.0,
+   "router:gpt-4o": 17.0,
+   "router:kimi-k2.5": 13.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": ""
+ },
+ {
+  "index": 23,
+  "title": "One Hyperparameter to Rule Them All? A Scaling Law for Weight Decay on Small Datasets",
+  "consensus": 15.2,
+  "sources": {
+   "router:deepseek-v3.2": 17.0,
+   "router:gpt-4o": 16.0,
+   "router:kimi-k2.5": 14.0,
+   "panel_a": 13.0,
+   "panel_b": 16.0
+  },
+  "heavy_note": "重负载:含 Tiny-ImageNet + 上千次训练 → 若入选须砍 Tiny-ImageNet、缩网格"
+ },
+ {
+  "index": 46,
+  "title": "The Early Bird Gets the Feature: How Architectural Inductive Biases Shape Early Learning Dynamics on Small Datasets",
+  "consensus": 15.0,
+  "sources": {
+   "router:deepseek-v3.2": 12.0,
+   "router:gpt-4o": 18.0,
+   "router:kimi-k2.5": 15.0
+  },
+  "heavy_note": ""
+ }
+]

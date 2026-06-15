@@ -1,0 +1,463 @@
+[
+ {
+  "index": 28,
+  "title": "The Regularization Interference Effect: When Combined Regularizers Hurt More Than Help on Small Datasets",
+  "rank_score": 13.25,
+  "manifestability": 4.5,
+  "feasibility": 4.5,
+  "novelty": 3.75,
+  "icbinb_fit": 5.0,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   23,
+   28,
+   32,
+   64,
+   66
+  ]
+ },
+ {
+  "index": 1,
+  "title": "The Informative Noise: Can High-Loss Samples Under Label Noise Be Crucial for Distribution Shift Robustness?",
+  "rank_score": 13.0,
+  "manifestability": 4.0,
+  "feasibility": 4.0,
+  "novelty": 4.0,
+  "icbinb_fit": 5.0,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   1
+  ]
+ },
+ {
+  "index": 73,
+  "title": "The Brittleness Signature: Simple Diagnostic Tests for Evaluating Small-Dataset Models",
+  "rank_score": 13.0,
+  "manifestability": 4.0,
+  "feasibility": 4.5,
+  "novelty": 4.0,
+  "icbinb_fit": 5.0,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   40,
+   41,
+   42,
+   73
+  ]
+ },
+ {
+  "index": 20,
+  "title": "The Calibration Paradox: Why Data Augmentation Worsens Calibration Under Label Noise",
+  "rank_score": 12.75,
+  "manifestability": 4.25,
+  "feasibility": 4.75,
+  "novelty": 3.75,
+  "icbinb_fit": 4.75,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   18,
+   20
+  ]
+ },
+ {
+  "index": 37,
+  "title": "Noise as a Litmus Test: Using Controlled Label Noise to Predict Generalization on Small Datasets",
+  "rank_score": 12.75,
+  "manifestability": 4.5,
+  "feasibility": 4.25,
+  "novelty": 3.75,
+  "icbinb_fit": 4.5,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   29,
+   30,
+   36,
+   37
+  ]
+ },
+ {
+  "index": 8,
+  "title": "Reinforce or Diversify? Selective Sample Duplication Outperforms Standard Augmentation Under Label Noise",
+  "rank_score": 12.5,
+  "manifestability": 4.0,
+  "feasibility": 4.5,
+  "novelty": 4.0,
+  "icbinb_fit": 4.5,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   8,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   21,
+   22,
+   35
+  ]
+ },
+ {
+  "index": 33,
+  "title": "The Memorization Test: Can Simple Synthetic Tasks Distinguish Learning from Memorization on Small Datasets?",
+  "rank_score": 12.5,
+  "manifestability": 4.5,
+  "feasibility": 4.25,
+  "novelty": 3.75,
+  "icbinb_fit": 4.25,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   33
+  ]
+ },
+ {
+  "index": 5,
+  "title": "The Training Oracle: Can Simple Training Statistics Outperform Validation Loss for Early Stopping on Small Datasets?",
+  "rank_score": 12.2,
+  "manifestability": 3.8,
+  "feasibility": 4.2,
+  "novelty": 3.8,
+  "icbinb_fit": 4.6,
+  "n_judges": 5,
+  "heavy_8h": false,
+  "dup_merged": [
+   5,
+   7,
+   9
+  ]
+ },
+ {
+  "index": 60,
+  "title": "The Test-Time Simplicity Gap: How Small-Dataset Training Leads to Overconfident Predictions on Simple Test Samples",
+  "rank_score": 12.2,
+  "manifestability": 3.4,
+  "feasibility": 3.8,
+  "novelty": 4.0,
+  "icbinb_fit": 4.8,
+  "n_judges": 5,
+  "heavy_8h": false,
+  "dup_merged": [
+   60
+  ]
+ },
+ {
+  "index": 69,
+  "title": "Confidence-Maximizing Augmentation: A Simple Inference-Time Trick for Small Datasets",
+  "rank_score": 12.0,
+  "manifestability": 4.0,
+  "feasibility": 4.75,
+  "novelty": 3.5,
+  "icbinb_fit": 4.5,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   65,
+   67,
+   68,
+   69
+  ]
+ },
+ {
+  "index": 72,
+  "title": "The Data-Aware Initialization: A Single Scaling Factor to Match Parameter Magnitudes to Dataset Size",
+  "rank_score": 12.0,
+  "manifestability": 4.33,
+  "feasibility": 3.0,
+  "novelty": 3.67,
+  "icbinb_fit": 4.0,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   72
+  ]
+ },
+ {
+  "index": 2,
+  "title": "The Warmup Dilemma: Does Early Weight Decay During Learning Rate Warmup Harm Generalization on Small Datasets?",
+  "rank_score": 11.75,
+  "manifestability": 4.0,
+  "feasibility": 4.5,
+  "novelty": 3.5,
+  "icbinb_fit": 4.25,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   2
+  ]
+ },
+ {
+  "index": 19,
+  "title": "The Calibration Shake: Can Small Intentional Oscillations in Optimization Improve Model Calibration?",
+  "rank_score": 11.67,
+  "manifestability": 4.0,
+  "feasibility": 4.33,
+  "novelty": 3.67,
+  "icbinb_fit": 4.0,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   17,
+   19
+  ]
+ },
+ {
+  "index": 55,
+  "title": "Schedule the Noise: Why Data Augmentation Strength Should Be Scheduled Like Learning Rate for Small Datasets",
+  "rank_score": 11.66,
+  "manifestability": 4.33,
+  "feasibility": 4.33,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   51,
+   55,
+   56,
+   57,
+   70,
+   71
+  ]
+ },
+ {
+  "index": 62,
+  "title": "Breaking the Symmetry: Decoupling Sample Selection from Parameter Update with Dual Loss Functions for Small Datasets",
+  "rank_score": 11.66,
+  "manifestability": 3.33,
+  "feasibility": 3.67,
+  "novelty": 4.0,
+  "icbinb_fit": 4.33,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   62
+  ]
+ },
+ {
+  "index": 38,
+  "title": "Dense or Sparse? How Skip Connection Density Shapes Small-Dataset Learning Dynamics",
+  "rank_score": 11.5,
+  "manifestability": 4.25,
+  "feasibility": 4.5,
+  "novelty": 3.5,
+  "icbinb_fit": 3.75,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   38
+  ]
+ },
+ {
+  "index": 49,
+  "title": "Learning to Regularize: Predicting Optimal Regularization Strength from Early Training Dynamics on Small Datasets",
+  "rank_score": 11.5,
+  "manifestability": 4.0,
+  "feasibility": 3.25,
+  "novelty": 3.75,
+  "icbinb_fit": 3.75,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   49
+  ]
+ },
+ {
+  "index": 74,
+  "title": "Diversity-Driven Stochastic Forward Passes: Adaptive Noise Injection for Small-Dataset Generalization",
+  "rank_score": 11.5,
+  "manifestability": 3.5,
+  "feasibility": 3.25,
+  "novelty": 4.0,
+  "icbinb_fit": 4.0,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   74
+  ]
+ },
+ {
+  "index": 46,
+  "title": "The Early Bird Gets the Feature: How Architectural Inductive Biases Shape Early Learning Dynamics on Small Datasets",
+  "rank_score": 11.34,
+  "manifestability": 4.0,
+  "feasibility": 3.67,
+  "novelty": 3.67,
+  "icbinb_fit": 3.67,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   43,
+   44,
+   45,
+   46,
+   47,
+   48
+  ]
+ },
+ {
+  "index": 59,
+  "title": "The Early Architecture Test: Predicting Optimal Architecture from Initial Training Dynamics on Small Datasets",
+  "rank_score": 11.33,
+  "manifestability": 3.33,
+  "feasibility": 2.33,
+  "novelty": 4.0,
+  "icbinb_fit": 4.0,
+  "n_judges": 3,
+  "heavy_8h": true,
+  "dup_merged": [
+   50,
+   54,
+   59
+  ]
+ },
+ {
+  "index": 52,
+  "title": "The Receptive Field Timeline: Does Placing Larger Kernels Early Improve Generalization on Small Datasets?",
+  "rank_score": 11.33,
+  "manifestability": 4.0,
+  "feasibility": 4.67,
+  "novelty": 3.33,
+  "icbinb_fit": 4.0,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   52
+  ]
+ },
+ {
+  "index": 24,
+  "title": "The Winding Path to Better Generalization: How Optimization Trajectory Geometry Predicts Performance on Small Datasets",
+  "rank_score": 11.25,
+  "manifestability": 3.5,
+  "feasibility": 3.25,
+  "novelty": 3.75,
+  "icbinb_fit": 4.0,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   24
+  ]
+ },
+ {
+  "index": 25,
+  "title": "The Forgotten Knob: Tuning BatchNorm Gamma Initialization to Modulate Weight Decay's Channel-Wise Regularization",
+  "rank_score": 11.25,
+  "manifestability": 4.0,
+  "feasibility": 4.5,
+  "novelty": 3.75,
+  "icbinb_fit": 3.5,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   25
+  ]
+ },
+ {
+  "index": 75,
+  "title": "Cleaning the Noise: Selective Suppression of Harmful Gradient Noise Components for Small-Dataset Generalization",
+  "rank_score": 11.2,
+  "manifestability": 3.6,
+  "feasibility": 4.4,
+  "novelty": 3.6,
+  "icbinb_fit": 4.0,
+  "n_judges": 5,
+  "heavy_8h": false,
+  "dup_merged": [
+   75
+  ]
+ },
+ {
+  "index": 31,
+  "title": "Consistency Matters: Why Fixed-Order Data Augmentation Improves Generalization on Small Datasets",
+  "rank_score": 11.0,
+  "manifestability": 4.0,
+  "feasibility": 5.0,
+  "novelty": 3.33,
+  "icbinb_fit": 3.67,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   27,
+   31
+  ]
+ },
+ {
+  "index": 53,
+  "title": "The Shape of Data: How Optimal Neural Architecture Depth-Width Ratio Scales with Dataset Size",
+  "rank_score": 10.75,
+  "manifestability": 4.0,
+  "feasibility": 2.75,
+  "novelty": 3.0,
+  "icbinb_fit": 3.75,
+  "n_judges": 4,
+  "heavy_8h": true,
+  "dup_merged": [
+   53,
+   58
+  ]
+ },
+ {
+  "index": 61,
+  "title": "Learning in Sparse Neighborhoods: Adaptive Sample-Wise Learning Rates Based on Local Data Manifold Density",
+  "rank_score": 10.67,
+  "manifestability": 3.0,
+  "feasibility": 3.0,
+  "novelty": 4.0,
+  "icbinb_fit": 3.67,
+  "n_judges": 3,
+  "heavy_8h": false,
+  "dup_merged": [
+   61
+  ]
+ },
+ {
+  "index": 39,
+  "title": "Architectural Augmentation Synergy: Which Neural Networks Benefit Most from Data Augmentation on Small Datasets?",
+  "rank_score": 10.5,
+  "manifestability": 4.0,
+  "feasibility": 3.25,
+  "novelty": 3.25,
+  "icbinb_fit": 3.25,
+  "n_judges": 4,
+  "heavy_8h": false,
+  "dup_merged": [
+   39
+  ]
+ },
+ {
+  "index": 34,
+  "title": "Accelerating Alignment: Steering Gradients Toward Sharp Directions Early for Efficient Small-Dataset Training",
+  "rank_score": 9.34,
+  "manifestability": 2.67,
+  "feasibility": 2.33,
+  "novelty": 3.67,
+  "icbinb_fit": 3.0,
+  "n_judges": 3,
+  "heavy_8h": true,
+  "dup_merged": [
+   34
+  ]
+ },
+ {
+  "index": 0,
+  "title": "The Silent Drift: How Learning Rate Schedules Affect Batch Normalization Statistics in Fine-Tuning",
+  "rank_score": 9.33,
+  "manifestability": 3.0,
+  "feasibility": 2.67,
+  "novelty": 3.0,
+  "icbinb_fit": 3.33,
+  "n_judges": 3,
+  "heavy_8h": true,
+  "dup_merged": [
+   0
+  ]
+ }
+]
