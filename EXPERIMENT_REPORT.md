@@ -42,11 +42,11 @@
 ## 4. 完整实验结果
 
 - **规模**：4 阶段（initial_implementation → baseline_tuning → creative_research → ablation_studies），**57 分钟**，46 个实验数据文件，**488 张节点级图**，4 份 stage summary，4 个 tree_data。
-- **核心科学结论**：**compositional regularization 改善了组合泛化**
-  - 最佳节点：compositional split exact-match accuracy **0.4658（正则化）vs 0.3288（基线）**
+- **单次运行观察**：本次 compositional regularization 在该 run 中改善了组合泛化（注意:本系统逐 run 方差极大,同一 idea 可翻转结论,本次正面结果不能排除是方差/单 seed 噪声,而非数据集差异的确证）
+  - 最佳节点：compositional split exact-match accuracy **0.4658（正则化）vs 0.3288（基线）**（来自单次未固定 seed 的 run,复现需先固化 best node 代码 + seed,而非重跑树搜索）
   - 修复后的聚合曲线图：部分 regularized variant 的 compositional test accuracy 爬升到 **0.8~1.0**，baseline 类约 0.4
 - **stage4 消融有深度**：对比 baseline / stop-gradient(`target.detach()`) / 无 stop-gradient，分析表征 collapse 与 alignment。
-- **与论文对照**：论文那篇（同一 idea seed）报告的是**负面结果**（《Unexpected Obstacles...》，正则化没显著改善）；本次在**合成 SCAN-like 数据**上跑出了**正面**结果——差异源于数据集（合成 vs 真实），印证了下方审稿模型的批评。
+- **与论文对照**：论文那篇（同一 idea seed）报告的是**负面结果**（《Unexpected Obstacles...》，正则化没显著改善）；本次在**合成 SCAN-like 数据**上跑出了**正面**结果——差异可能源于数据集（合成 vs 真实），印证了下方审稿模型的批评;但鉴于本系统逐 run 方差极大、同 idea 可翻转结论,该正面结果同样不能排除是方差/单 seed 噪声,而非数据集差异的确证。
 
 ## 5. 产物清单
 
