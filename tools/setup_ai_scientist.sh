@@ -7,7 +7,7 @@
 #
 # 做三件事:
 #   1) 装这套适配漏装/必需的 Python 依赖
-#   2) 写一份可 source 的 router/镜像 env 模板(★key 不写进文件,运行时 export)
+#   2) 写一份可 source 的 router/镜像 env 模板(key 不写进文件,运行时 export)
 #   3) 验证关键适配 patch 是否都在 repo 里(部署到未打补丁的官方 clone 会逐条报缺)
 #
 # 设计:幂等、只读式验证、绝不把 API key 落盘。CUDA/Linux 与 Mac/MPS 通用。
@@ -46,7 +46,7 @@ echo
 # ---------------------------------------------------------------------------
 # 2) env 模板(key 不落盘)
 # ---------------------------------------------------------------------------
-echo "== [2/3] 写 router/镜像 env 模板(★不含 key)=="
+echo "== [2/3] 写 router/镜像 env 模板(不含 key)=="
 ENV_FILE="$(cd "$V2_DIR/.." && pwd)/.env.router"
 cat > "$ENV_FILE" <<EOF
 # source 本文件后再 export 你的 key:  export OPENAI_API_KEY=<router-key>
