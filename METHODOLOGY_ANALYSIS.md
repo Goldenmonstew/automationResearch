@@ -208,7 +208,7 @@ Stage 1 initial_implementation  → Stage 2 baseline_tuning
 
 ---
 
-## 6. 资源与约束量化(★参照论文普遍薄弱、本文重点)
+## 6. 资源与约束量化(参照论文普遍薄弱、本文重点)
 
 ### 6.1 产生了哪些树(实测树结构)
 
