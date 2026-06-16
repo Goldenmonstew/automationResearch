@@ -51,6 +51,8 @@ def main():
     p.add_argument("--grounded_threshold", type=float, default=0.90)
     p.add_argument("--skip_writeup", action="store_true",
                    help="use existing tex, only run critique + judge")
+    p.add_argument("--force_rewrite", action="store_true",
+                   help="force multi-strategy rewrite even if original tex exists")
     p.add_argument("--skip_agg", action="store_true")
     p.add_argument("--out_log", default=None)
     args = p.parse_args()
@@ -62,7 +64,7 @@ def main():
     log_path = args.out_log or osp.join(idea_dir, "enhanced_pipeline_log.json")
     strategies = [s.strip() for s in args.strategies.split(",")]
 
-    log = {"experiment": idea_dir, "pipeline": "enhanced_v1",
+    log = {"experiment": idea_dir, "pipeline": "enhanced_v2",
            "args": vars(args), "steps": []}
 
     def log_step(name, **kw):
@@ -105,29 +107,28 @@ def main():
             tex = f.read()
         shutil.copy(tex_path, tex_path + ".pre_enhanced")
 
-        from critique_writeup import MIN_FIXABLE_RATIO
         for rnd in range(1, args.max_critique_rounds + 1):
             t2 = time.time()
             claims, counts, ratio = critique_tex(tex, evidence, args.model_critique)
-            bad = [c for c in claims
-                   if c.get("audit_verdict") in ("unsupported", "contradicted")]
-            if ratio >= args.grounded_threshold:
-                log_step(f"critique_round_{rnd}",
-                         duration_s=round(time.time()-t2, 1),
-                         grounded_ratio=ratio, action="passed")
-                break
-            if ratio < MIN_FIXABLE_RATIO:
+            contradicted = [c for c in claims
+                            if c.get("audit_verdict") == "contradicted"]
+            unsupported = [c for c in claims
+                           if c.get("audit_verdict") == "unsupported"]
+            if not contradicted:
                 log_step(f"critique_round_{rnd}",
                          duration_s=round(time.time()-t2, 1),
                          grounded_ratio=ratio,
-                         action="skipped_low_grounding")
-                print(f"[ep] grounding {ratio:.2f} < {MIN_FIXABLE_RATIO} — "
-                      "skipping fix to avoid over-hedging")
+                         n_contradicted=0, n_unsupported=len(unsupported),
+                         action="passed_no_contradictions")
                 break
-            new_tex, applied = fix_tex(tex, bad, evidence, args.model_critique)
+            new_tex, applied = fix_tex(tex, contradicted, evidence,
+                                       args.model_critique)
             log_step(f"critique_round_{rnd}",
                      duration_s=round(time.time()-t2, 1),
-                     grounded_ratio=ratio, edits=applied, action="fixed")
+                     grounded_ratio=ratio, edits=applied,
+                     n_contradicted=len(contradicted),
+                     n_unsupported=len(unsupported),
+                     action="fixed")
             if applied == 0:
                 break
             tex = new_tex
@@ -271,7 +272,7 @@ def main():
 
     log["summary"] = {
         "total_duration_s": round(total_time, 1),
-        "pipeline": "enhanced_v1",
+        "pipeline": "enhanced_v2",
         "strategies": strategies,
         "final_grounded_ratio": final_ratio,
         "pdf": pdf_out if osp.exists(pdf_out) else None,

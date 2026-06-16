@@ -268,19 +268,16 @@ def critique_tex(tex, evidence, model):
 # Step 4: Targeted fix for ungrounded claims
 # ---------------------------------------------------------------------------
 
-FIX_SYS = """You are a research-integrity editor. You fix ungrounded claims in
+FIX_SYS = """You are a research-integrity editor. You fix CONTRADICTED claims in
 a paper's LaTeX source using ONLY the provided evidence. Never invent results.
 
 CRITICAL RULES:
 - For contradicted claims: correct the numbers/statements to match the evidence.
-- For unsupported claims: CLEANLY DELETE the sentence or paragraph.
-  Do NOT add hedging words like "hypothetical", "unverified", "conceptual",
-  "preliminary", "potential", or "it is possible that". Hedging reads worse
-  than deletion. If an entire subsection becomes empty after deletions,
-  remove the subsection heading too.
+- Do NOT delete unsupported claims — they may be reasonable inferences.
+  Only fix claims that DIRECTLY CONFLICT with the evidence.
 - Keep LaTeX compilable. Do not leave orphan fragments or empty sections."""
 
-FIX_PROMPT = """PROBLEM CLAIMS (unsupported or contradicted):
+FIX_PROMPT = """CONTRADICTED CLAIMS (these conflict with the evidence and must be corrected):
 ```json
 {bad_claims}
 ```
@@ -295,20 +292,19 @@ CURRENT LATEX:
 {tex}
 ```
 
-Produce surgical text edits to fix ALL problem claims. RULES:
+Produce surgical text edits to fix the CONTRADICTED claims only. RULES:
 1. The "find" string must be an EXACT, VERBATIM copy from the LaTeX above —
    copy-paste, do not retype. Include at least 40 chars of surrounding context
    so the match is unique.
 2. The "replace" string must NOT introduce any new empirical claims that are not
-   in the evidence summary. When removing a claim, also remove the sentence —
-   do not leave orphan fragments.
-3. For contradicted claims, correct the numbers to match the evidence exactly.
-4. For unsupported claims, DELETE them cleanly. Do NOT hedge with words like
-   "hypothetical", "unverified", "conceptual" — just remove the sentence.
+   in the evidence summary.
+3. Correct the numbers/statements to match the evidence exactly.
+4. Do NOT delete sentences unless they are entirely wrong. Prefer correcting
+   over removing. Preserve the narrative flow.
 
 Return a JSON array inside a ```json fence:
 {{"find": "<EXACT verbatim substring, 40+ chars for uniqueness>",
- "replace": "<corrected text, or empty string to delete>"}}"""
+ "replace": "<corrected text>"}}"""
 
 
 def _locate_claim_in_tex(tex, statement, context_chars=200):
@@ -361,15 +357,21 @@ def _fuzzy_find(tex, find_str, threshold=0.7):
 MIN_FIXABLE_RATIO = 0.15
 
 def fix_tex(tex, bad_claims, evidence, model):
-    """Apply surgical edits to fix ungrounded claims. Returns (new_tex, n_applied)."""
+    """Apply surgical edits to fix contradicted claims. Returns (new_tex, n_applied).
+
+    Only corrects claims that CONFLICT with evidence. Unsupported claims are
+    left alone — they may be reasonable inferences and deleting them damages
+    narrative coherence (validated by A/B tournament: critique-only 30% WR vs
+    rewrite 35% WR, with content deletion being the primary cause of losses).
+    """
     contradicted = [c for c in bad_claims if c.get("audit_verdict") == "contradicted"]
     unsupported = [c for c in bad_claims if c.get("audit_verdict") == "unsupported"]
-    if len(unsupported) > 15 and len(contradicted) < len(bad_claims) * 0.3:
-        print(f"[cw] too many unsupported claims ({len(unsupported)}), "
-              f"fixing only {len(contradicted)} contradicted claims")
-        bad_claims = contradicted
-        if not bad_claims:
-            return tex, 0
+    if unsupported:
+        print(f"[cw] skipping {len(unsupported)} unsupported claims (preserve content)")
+    bad_claims = contradicted
+    if not bad_claims:
+        print("[cw] no contradicted claims to fix")
+        return tex, 0
 
     slim = []
     for c in bad_claims:

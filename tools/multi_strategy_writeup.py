@@ -204,24 +204,19 @@ def run_single_strategy(idea_dir, strategy_key, evidence, model_writeup,
             result["pre_critique_grounded"] = ratio
             result["pre_critique_counts"] = counts
 
-            bad = [c for c in claims
-                   if c.get("audit_verdict") in ("unsupported", "contradicted")]
-            from critique_writeup import MIN_FIXABLE_RATIO
-            if bad and ratio < 0.90 and ratio >= MIN_FIXABLE_RATIO:
-                new_tex, applied = fix_tex(tex, bad, evidence, model_critique)
+            contradicted = [c for c in claims
+                           if c.get("audit_verdict") == "contradicted"]
+            if contradicted:
+                new_tex, applied = fix_tex(tex, contradicted, evidence,
+                                           model_critique)
                 with open(tex_path, "w") as f:
                     f.write(new_tex)
                 result["critique_edits"] = applied
 
-                # Re-check after fix
-                claims2, counts2, ratio2 = critique_tex(new_tex, evidence, model_critique)
+                claims2, counts2, ratio2 = critique_tex(new_tex, evidence,
+                                                        model_critique)
                 result["post_critique_grounded"] = ratio2
                 result["post_critique_counts"] = counts2
-            elif bad and ratio < MIN_FIXABLE_RATIO:
-                print(f"[msw] grounding {ratio:.2f} < {MIN_FIXABLE_RATIO} — "
-                      "skipping fix_tex to avoid over-hedging")
-                result["post_critique_grounded"] = ratio
-                result["critique_skipped"] = "grounding_too_low"
             else:
                 result["post_critique_grounded"] = ratio
 
