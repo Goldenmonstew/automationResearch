@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>trust-verify | AI Research Paper Verification</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #e0e0e0; line-height: 1.6; }
+.container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+/* Hero */
+.hero { padding: 80px 0 60px; text-align: center; }
+.hero h1 { font-size: 48px; font-weight: 700; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .subtitle { font-size: 20px; color: #9ca3af; margin-top: 12px; }
+.hero .tagline { font-size: 15px; color: #6b7280; margin-top: 24px; }
+
+/* Stats bar */
+.stats { display: flex; gap: 32px; justify-content: center; margin: 40px 0; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat .val { font-size: 32px; font-weight: 700; color: #60a5fa; }
+.stat .label { font-size: 13px; color: #6b7280; }
+
+/* Demo section */
+.demo { background: #111; border: 1px solid #222; border-radius: 12px; padding: 32px; margin: 40px 0; }
+.demo h2 { font-size: 20px; margin-bottom: 16px; }
+.demo textarea { width: 100%; height: 120px; background: #0a0a0a; color: #e0e0e0; border: 1px solid #333; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 13px; resize: vertical; }
+.demo .controls { display: flex; gap: 12px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+.demo input[type="text"] { flex: 1; min-width: 200px; background: #0a0a0a; color: #e0e0e0; border: 1px solid #333; border-radius: 6px; padding: 8px 12px; font-size: 14px; }
+.btn { background: #2563eb; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 14px; cursor: pointer; font-weight: 500; }
+.btn:hover { background: #1d4ed8; }
+.btn:disabled { background: #374151; cursor: not-allowed; }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+
+/* Results */
+.result { margin-top: 24px; }
+.verdict-bar { padding: 16px 20px; border-radius: 8px; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.verdict-bar.pass { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+.verdict-bar.fail { background: #2a0a0a; border: 1px solid #7f1d1d; color: #f87171; }
+.verdict-bar.warn { background: #1c1a05; border: 1px solid #854d0e; color: #facc15; }
+.claims-list { margin-top: 16px; }
+.claim-item { padding: 10px 14px; border-bottom: 1px solid #1f1f1f; font-size: 14px; display: flex; align-items: flex-start; gap: 10px; }
+.claim-icon { font-weight: 700; flex-shrink: 0; width: 50px; text-align: center; font-size: 12px; padding: 2px 6px; border-radius: 4px; }
+.claim-icon.ok { background: #052e16; color: #4ade80; }
+.claim-icon.fail { background: #2a0a0a; color: #f87171; }
+.claim-icon.warn { background: #1c1a05; color: #facc15; }
+.claim-text { color: #d1d5db; }
+.meta { font-size: 12px; color: #6b7280; margin-top: 8px; }
+
+/* Features */
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 60px 0; }
+.feature { background: #111; border: 1px solid #222; border-radius: 10px; padding: 24px; }
+.feature h3 { font-size: 16px; color: #60a5fa; margin-bottom: 8px; }
+.feature p { font-size: 14px; color: #9ca3af; }
+
+/* How it works */
+.how { margin: 60px 0; }
+.how h2 { text-align: center; margin-bottom: 32px; font-size: 24px; }
+.pipeline { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; align-items: center; }
+.step { background: #111; border: 1px solid #222; border-radius: 8px; padding: 14px 18px; text-align: center; }
+.step .num { font-size: 12px; color: #60a5fa; font-weight: 600; }
+.step .name { font-size: 14px; font-weight: 500; margin-top: 4px; }
+.step .desc { font-size: 12px; color: #6b7280; margin-top: 4px; }
+.arrow { color: #333; font-size: 20px; }
+
+footer { text-align: center; padding: 40px 0; color: #4b5563; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hero">
+    <h1>trust-verify</h1>
+    <p class="subtitle">Catch fabrications in AI-generated research papers</p>
+    <p class="tagline">Signal quality analysis + evidence-grounded claim verification</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="val">84%</div><div class="label">Accuracy</div></div>
+    <div class="stat"><div class="val">84%</div><div class="label">Precision</div></div>
+    <div class="stat"><div class="val">84%</div><div class="label">Recall</div></div>
+    <div class="stat"><div class="val">16%</div><div class="label">False Positive Rate</div></div>
+  </div>
+
+  <div class="demo">
+    <h2>Try it</h2>
+    <textarea id="latex" placeholder="Paste LaTeX paper content here..."></textarea>
+    <div class="controls">
+      <input type="text" id="server" placeholder="API server URL (e.g. http://localhost:8080)" value="">
+      <input type="text" id="apikey" placeholder="API key (optional)">
+      <button class="btn" id="verifyBtn" onclick="verify()">Verify</button>
+      <button class="btn btn-sm" onclick="loadExample()" style="background:#374151">Load Example</button>
+    </div>
+    <div class="result" id="result" style="display:none"></div>
+  </div>
+
+  <div class="how">
+    <h2>How it works</h2>
+    <div class="pipeline">
+      <div class="step"><div class="num">1</div><div class="name">Signal Check</div><div class="desc">Detect degenerate<br>experiments</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step"><div class="num">2</div><div class="name">Claim Extraction</div><div class="desc">Find verifiable<br>claims in paper</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step"><div class="num">3</div><div class="name">Evidence Resolution</div><div class="desc">Map claims to<br>actual data</div></div>
+      <div class="arrow">&rarr;</div>
+      <div class="step"><div class="num">4</div><div class="name">Grounding</div><div class="desc">Judge each claim<br>against evidence</div></div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <h3>Entity Discrepancy Detection</h3>
+      <p>Catches when a paper claims "CIFAR-100" but the code only contains CIFAR-10, or claims "ResNet-18" but uses SmallCNN.</p>
+    </div>
+    <div class="feature">
+      <h3>Comparison Verification</h3>
+      <p>Structures condition-pair data to verify "X improves over Y" claims against actual experimental measurements.</p>
+    </div>
+    <div class="feature">
+      <h3>Degenerate Signal Detection</h3>
+      <p>Pure-objective layer that catches saturated metrics (100% accuracy with no contrast) that fool standard reviewers.</p>
+    </div>
+  </div>
+
+  <footer>trust-verify &mdash; AI research integrity verification</footer>
+</div>
+
+<script>
+const EXAMPLE = {
+  latex: `\\documentclass{article}
+\\title{Adaptive Batch Normalization Momentum for Small-Data Regimes}
+\\begin{document}
+\\maketitle
+
+We evaluate adaptive vs fixed BN momentum on CIFAR-10/100 and MNIST using ResNet architectures.
+Our experiments show that adaptive momentum (0.5 decreasing to 0.01) consistently improves
+test accuracy compared to fixed momentum configurations across all datasets.
+
+On synthetic small images, adaptive momentum achieves 0.38 mean accuracy compared to
+fixed 0.01 at 0.52, representing a significant improvement of approximately 14 percentage points.
+
+Training was performed with dropout, weight decay, and label smoothing regularization.
+\\end{document}`,
+  result: {
+    verdict: "NOT TRUSTWORTHY",
+    trust_score: 0.33,
+    signal_quality: 0.489,
+    claims_total: 6,
+    claims_trustworthy: 2,
+    claims_not_trustworthy: 3,
+    claims_questionable: 1,
+    elapsed_seconds: 31.2,
+    claims: [
+      {claim_id:1, claim:"Evaluate on CIFAR-10/100 and MNIST using ResNet architectures", verdict:"NOT TRUSTWORTHY", grounding:"CONTRADICTED", n_mismatches:0},
+      {claim_id:2, claim:"Adaptive momentum consistently improves test accuracy compared to fixed momentum", verdict:"NOT TRUSTWORTHY", grounding:"CONTRADICTED", n_mismatches:0},
+      {claim_id:3, claim:"Adaptive momentum achieves 0.38 mean accuracy vs fixed 0.01 at 0.52", verdict:"NOT TRUSTWORTHY", grounding:"CONTRADICTED", n_mismatches:1},
+      {claim_id:4, claim:"Improvement of approximately 14 percentage points", verdict:"QUESTIONABLE", grounding:"UNSUPPORTED", n_mismatches:0},
+      {claim_id:5, claim:"Training with dropout, weight decay, and label smoothing", verdict:"TRUSTWORTHY", grounding:"GROUNDED", n_mismatches:0},
+      {claim_id:6, claim:"Synthetic small images used for evaluation", verdict:"TRUSTWORTHY", grounding:"GROUNDED", n_mismatches:0},
+    ]
+  }
+};
+
+function loadExample() {
+  document.getElementById('latex').value = EXAMPLE.latex;
+  showResult(EXAMPLE.result);
+}
+
+async function verify() {
+  const latex = document.getElementById('latex').value;
+  const server = document.getElementById('server').value;
+  const apikey = document.getElementById('apikey').value;
+  const btn = document.getElementById('verifyBtn');
+
+  if (!latex) { alert('Paste LaTeX content first'); return; }
+  if (!server) { alert('Enter API server URL'); return; }
+
+  btn.disabled = true; btn.textContent = 'Verifying...';
+  try {
+    const headers = {'Content-Type': 'application/json'};
+    if (apikey) headers['Authorization'] = 'Bearer ' + apikey;
+    const resp = await fetch(server + '/verify', {
+      method: 'POST', headers,
+      body: JSON.stringify({latex, llm_claims: true})
+    });
+    const data = await resp.json();
+    if (resp.ok) showResult(data);
+    else alert('Error: ' + (data.error || resp.statusText));
+  } catch(e) { alert('Connection failed: ' + e.message); }
+  btn.disabled = false; btn.textContent = 'Verify';
+}
+
+function showResult(data) {
+  const el = document.getElementById('result');
+  el.style.display = 'block';
+  const cls = data.verdict === 'TRUSTWORTHY' ? 'pass' : (data.verdict === 'LOW CONFIDENCE' ? 'warn' : 'fail');
+  let html = `<div class="verdict-bar ${cls}">
+    <span>${data.verdict}</span>
+    <span>Score: ${Math.round(data.trust_score * 100)}% &bull; Signal: ${data.signal_quality.toFixed(3)} &bull; ${data.elapsed_seconds.toFixed(1)}s</span>
+  </div>`;
+  html += '<div class="claims-list">';
+  for (const c of data.claims) {
+    const icon = c.verdict === 'TRUSTWORTHY' ? 'ok' : (c.verdict === 'QUESTIONABLE' ? 'warn' : 'fail');
+    const label = c.verdict === 'TRUSTWORTHY' ? 'OK' : (c.verdict === 'QUESTIONABLE' ? 'WARN' : 'FAIL');
+    html += `<div class="claim-item">
+      <span class="claim-icon ${icon}">${label}</span>
+      <span class="claim-text">${c.claim}<br><span class="meta">Grounding: ${c.grounding}${c.n_mismatches ? ' | ' + c.n_mismatches + ' data mismatch(es)' : ''}</span></span>
+    </div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+</script>
+</body>
+</html>
