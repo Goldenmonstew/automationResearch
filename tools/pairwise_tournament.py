@@ -65,7 +65,10 @@ def parse_winner(text):
     m = re.search(r"```json\s*(.*?)```", text or "", re.DOTALL)
     blob = m.group(1) if m else (text or "")
     m2 = re.search(r'"winner"\s*:\s*"([AB])"', blob)
-    return m2.group(1) if m2 else None
+    winner = m2.group(1) if m2 else None
+    m3 = re.search(r'"reason"\s*:\s*"(.*?)"', blob, re.DOTALL)
+    reason = m3.group(1).strip() if m3 else None
+    return winner, reason
 
 
 def wilson_ci(wins, n, z=1.96):
@@ -105,15 +108,16 @@ def main():
                 try:
                     resp = llm(JUDGE_PROMPT.format(a=texts[a], b=texts[b]),
                                JUDGE_SYS, judge)
-                    w = parse_winner(resp)
+                    w, reason = parse_winner(resp)
                 except Exception as e:
                     print(f"[pt] call failed: {e}")
-                    w = None
+                    w, reason = None, None
                 ours_won = (w == ours_is) if w else None
                 records.append({"ours": osp.basename(ours),
                                 "theirs": osp.basename(theirs),
                                 "judge": judge, "ours_position": ours_is,
-                                "winner_letter": w, "ours_won": ours_won})
+                                "winner_letter": w, "ours_won": ours_won,
+                                "reason": reason})
                 print(f"[pt] {osp.basename(ours)[:28]} vs "
                       f"{osp.basename(theirs)[:18]} [{judge}/{ours_is}] -> "
                       f"ours_won={ours_won} ({time.time() - t0:.0f}s)")
