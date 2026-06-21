@@ -24,7 +24,6 @@ SRC=$H/automationResearch/AI-Scientist-v2
 SP=$H/automationResearch/sprint
 BASE=$SP/auto
 DST=$BASE/$LANE/AI-Scientist-v2
-PY=${CONDA_PY:-python}   # conda env python (set CONDA_PY for your deployment)
 
 mkdir -p "$BASE/$LANE"
 
@@ -33,6 +32,8 @@ set -a
 [ -f "$H/.sprint_env" ] && . "$H/.sprint_env"
 [ -z "${OPENAI_API_KEY:-}" ] && [ -f "$H/.env_llm_api_key" ] && OPENAI_API_KEY=$(cat "$H/.env_llm_api_key")
 set +a
+# Resolve python AFTER sourcing ~/.sprint_env so CONDA_PY (set there) takes effect.
+PY=${CONDA_PY:-python}   # conda env python (set CONDA_PY for your deployment)
 # Router base URL + key come from ~/.sprint_env at runtime (not committed).
 export OPENAI_API_BASE=${OPENAI_BASE_URL:-${OPENAI_API_BASE:-}}
 export HF_ENDPOINT=${HF_ENDPOINT:-https://hf-mirror.com}
