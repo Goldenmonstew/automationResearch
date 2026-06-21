@@ -91,10 +91,21 @@ def tree_cpu_busy(root_pids):
 
 
 def newest_journal_mtime(root):
+    """Newest mtime of any per-stage progress file. Broader than just
+    journal.json (which only flushes at sub-stage completion) — an actively
+    running stage that writes checkpoints / sub-stage json still reads as fresh,
+    so the CPU guard isn't the sole defense against a premature stale signal."""
     latest = 0
-    for j in glob.glob(osp.join(root, "experiments", "*", "logs", "*",
-                                "stage_*", "journal.json")):
-        latest = max(latest, osp.getmtime(j))
+    pats = [
+        osp.join(root, "experiments", "*", "logs", "*", "stage_*", "*.json"),
+        osp.join(root, "experiments", "*", "logs", "*", "stage_*", "*", "*.json"),
+    ]
+    for pat in pats:
+        for j in glob.glob(pat):
+            try:
+                latest = max(latest, osp.getmtime(j))
+            except OSError:
+                continue
     return latest
 
 
