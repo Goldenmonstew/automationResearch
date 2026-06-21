@@ -1,8 +1,8 @@
 diff --git a/ai_scientist/llm.py b/ai_scientist/llm.py
-index b79c6c6..3629bc6 100644
+index b79c6c6..03e2a60 100644
 --- a/ai_scientist/llm.py
 +++ b/ai_scientist/llm.py
-@@ -8,12 +8,43 @@ import anthropic
+@@ -8,12 +8,55 @@ import anthropic
  import backoff
  import openai
  
@@ -26,6 +26,17 @@ index b79c6c6..3629bc6 100644
 +    if model.startswith("gpt-4o"):  # gpt-4o-2024-*, gpt-4o-mini-*
 +        return "gpt-4o"
 +    return model
++
++
++def _is_reasoning_model(model):
++    """Reasoning models (e.g. gpt-5.4-pro) reject the `temperature` (and `seed`)
++    sampling params on the router and must be called with defaults only. Keep this
++    list narrow: gpt-5.5 / gpt-5.4 / gpt-5 currently *accept* temperature, so do not
++    blanket-match all gpt-5.x here.
++    """
++    if not model:
++        return False
++    return model in {"gpt-5.4-pro"} or model.endswith("-pro")
  
  AVAILABLE_LLMS = [
      "claude-3-5-sonnet-20240620",
@@ -33,6 +44,7 @@ index b79c6c6..3629bc6 100644
      # OpenAI models
 +    "gpt-5.5",
 +    "gpt-5.4",
++    "gpt-5.4-pro",
 +    "gpt-5",
 +    # Self-hosted router (OpenAI-compatible) models — argparse choices for
 +    # the ideation/CLI entry points; create_client routes them via OPENAI_BASE_URL
@@ -47,7 +59,7 @@ index b79c6c6..3629bc6 100644
      "gpt-4o-mini",
      "gpt-4o-mini-2024-07-18",
      "gpt-4o",
-@@ -94,6 +125,7 @@ def get_batch_responses_from_llm(
+@@ -94,6 +137,7 @@ def get_batch_responses_from_llm(
      temperature=0.7,
      n_responses=1,
  ) -> tuple[list[str], list[list[dict[str, Any]]]]:
@@ -55,7 +67,47 @@ index b79c6c6..3629bc6 100644
      msg = prompt
      if msg_history is None:
          msg_history = []
-@@ -273,6 +305,7 @@ def get_response_from_llm(
+@@ -115,6 +159,21 @@ def get_batch_responses_from_llm(
+         new_msg_history = [
+             new_msg_history + [{"role": "assistant", "content": c}] for c in content
+         ]
++    elif "gpt" in model and _is_reasoning_model(model):
++        new_msg_history = msg_history + [{"role": "user", "content": msg}]
++        response = client.chat.completions.create(
++            model=model,
++            messages=[
++                {"role": "system", "content": system_message},
++                *new_msg_history,
++            ],
++            max_completion_tokens=MAX_NUM_TOKENS,
++            n=n_responses,
++        )
++        content = [r.message.content for r in response.choices]
++        new_msg_history = [
++            new_msg_history + [{"role": "assistant", "content": c}] for c in content
++        ]
+     elif "gpt" in model:
+         new_msg_history = msg_history + [{"role": "user", "content": msg}]
+         response = client.chat.completions.create(
+@@ -226,6 +285,17 @@ def make_llm_call(client, model, temperature, system_message, prompt):
+             n=1,
+             stop=None,
+         )
++    elif "gpt" in model and _is_reasoning_model(model):
++        # Reasoning gpt models reject temperature/seed; use max_completion_tokens.
++        return client.chat.completions.create(
++            model=model,
++            messages=[
++                {"role": "system", "content": system_message},
++                *prompt,
++            ],
++            max_completion_tokens=MAX_NUM_TOKENS,
++            n=1,
++        )
+     elif "gpt" in model:
+         return client.chat.completions.create(
+             model=model,
+@@ -273,6 +343,7 @@ def get_response_from_llm(
      msg_history=None,
      temperature=0.7,
  ) -> tuple[str, list[dict[str, Any]]]:
@@ -63,7 +115,7 @@ index b79c6c6..3629bc6 100644
      msg = prompt
      if msg_history is None:
          msg_history = []
-@@ -420,7 +453,12 @@ def get_response_from_llm(
+@@ -420,7 +491,12 @@ def get_response_from_llm(
          )
          content = response.choices[0].message.content
          new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
@@ -77,7 +129,7 @@ index b79c6c6..3629bc6 100644
          new_msg_history = msg_history + [{"role": "user", "content": msg}]
          response = client.chat.completions.create(
              model=model,
-@@ -432,10 +470,8 @@ def get_response_from_llm(
+@@ -432,10 +508,8 @@ def get_response_from_llm(
              max_tokens=MAX_NUM_TOKENS,
              n=1,
          )
@@ -89,7 +141,7 @@ index b79c6c6..3629bc6 100644
  
      if print_debug:
          print()
-@@ -478,6 +514,7 @@ def extract_json_between_markers(llm_output: str) -> dict | None:
+@@ -478,6 +552,7 @@ def extract_json_between_markers(llm_output: str) -> dict | None:
  
  
  def create_client(model) -> tuple[Any, str]:
@@ -97,7 +149,7 @@ index b79c6c6..3629bc6 100644
      if model.startswith("claude-"):
          print(f"Using Anthropic API with model {model}.")
          return anthropic.Anthropic(), model
-@@ -532,13 +569,14 @@ def create_client(model) -> tuple[Any, str]:
+@@ -532,13 +607,14 @@ def create_client(model) -> tuple[Any, str]:
              "meta-llama/llama-3.1-405b-instruct",
          )
      elif 'gemini' in model:
@@ -122,7 +174,7 @@ index b79c6c6..3629bc6 100644
 +        print(f"Using OpenAI-compatible router with model {model}.")
 +        return openai.OpenAI(), model
 diff --git a/ai_scientist/perform_icbinb_writeup.py b/ai_scientist/perform_icbinb_writeup.py
-index 297ef65..0c8a030 100644
+index 297ef65..e7070aa 100644
 --- a/ai_scientist/perform_icbinb_writeup.py
 +++ b/ai_scientist/perform_icbinb_writeup.py
 @@ -19,7 +19,7 @@ from ai_scientist.llm import (
@@ -134,7 +186,227 @@ index 297ef65..0c8a030 100644
  
  from ai_scientist.perform_vlm_review import (
      generate_vlm_img_review,
-@@ -854,6 +854,26 @@ def gather_citations(base_folder, num_cite_rounds=20, small_model="gpt-4o-2024-0
+@@ -85,6 +85,181 @@ def compile_latex(cwd, pdf_file, timeout=30):
+         print(traceback.format_exc())
+ 
+ 
++def repair_invalid_figures(latex_code, available_figs, fuzzy_cutoff=0.6):
++    """P2: deterministic post-processing of figure references that point at a
++    file the aggregator never produced (the #1 source of `Figure ??` + 0
++    embedded images).
++
++    For each `\\includegraphics{X}` whose basename is not in available_figs:
++      1. fuzzy-map X to the closest real filename on disk (>= fuzzy_cutoff);
++         rewrite the path in place; OR
++      2. if no close match exists, delete that `\\includegraphics`. If the
++         deletion empties a surrounding `figure`/`subfigure` environment (no
++         remaining graphics), remove the whole environment so we do not leave an
++         empty floating box.
++
++    Operates purely on text — no LLM, no compile — so it always runs and is
++    idempotent. Returns (new_latex, n_remapped, n_deleted).
++    """
++    import difflib
++
++    avail = list(available_figs)
++    avail_lower = {a.lower(): a for a in avail}
++    n_remapped = 0
++    n_deleted = 0
++
++    inc_re = re.compile(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}")
++
++    def _tok(s):
++        # tokens of the filename STEM (drop extension + the bare word 'png'/'pdf'
++        # so the image format is never counted as a shared token).
++        stem = os.path.splitext(s)[0]
++        return set(t for t in re.split(r"[^a-z0-9]+", stem.lower())
++                   if len(t) > 2 and t not in ("png", "pdf", "jpg", "jpeg", "fig"))
++
++    def resolve(path):
++        """Return (action, value): ('keep', path) | ('remap', newpath) |
++        ('drop', None)."""
++        base = os.path.basename(path)
++        if base in avail or path in avail:
++            return ("keep", path)
++        # already a real file basename? keep.
++        if base.lower() in avail_lower:
++            return ("remap", path.replace(base, avail_lower[base.lower()]))
++        # LaTeX demo placeholders are always valid (shipped with graphicx).
++        if base.startswith("example-image"):
++            return ("keep", path)
++        # 1) close string match
++        match = difflib.get_close_matches(base, avail, n=1, cutoff=fuzzy_cutoff)
++        if match:
++            return ("remap", path.replace(base, match[0]) if base in path
++                    else match[0])
++        # 2) token-overlap fallback: prefer keeping a real (if imperfectly
++        #    named) figure over deleting it + leaving a dangling \ref. Pick the
++        #    available file sharing the most filename tokens (>=1 shared).
++        bt = _tok(base)
++        best, best_score = None, 0
++        for a in avail:
++            score = len(bt & _tok(a))
++            if score > best_score:
++                best, best_score = a, score
++        if best and best_score >= 1:
++            return ("remap", path.replace(base, best) if base in path else best)
++        return ("drop", None)
++
++    # First pass: classify every includegraphics.
++    to_drop_spans = []  # (start, end) of includegraphics commands to delete
++    out = latex_code
++    # Work on a list of (span, action, newpath) using finditer on the ORIGINAL.
++    edits = []
++    for m in inc_re.finditer(latex_code):
++        action, val = resolve(m.group(1))
++        if action == "keep":
++            continue
++        if action == "remap":
++            new_cmd = m.group(0).replace("{" + m.group(1) + "}", "{" + val + "}")
++            edits.append(("remap", m.start(), m.end(), new_cmd))
++            n_remapped += 1
++        else:
++            edits.append(("drop", m.start(), m.end(), ""))
++
++    if not edits:
++        return latex_code, 0, 0
++
++    # Apply edits back-to-front so offsets stay valid.
++    for kind, s, e, repl in sorted(edits, key=lambda x: x[1], reverse=True):
++        if kind == "remap":
++            out = out[:s] + repl + out[e:]
++        else:
++            out = out[:s] + "" + out[e:]
++            n_deleted += 1
++
++    # Second pass: drop now-empty figure / subfigure environments (no graphics
++    # left inside). Run until stable to catch nested cases. Harvest the \label
++    # keys of removed environments so we can neutralize dangling \ref's that
++    # would otherwise render as `??`.
++    env_re = re.compile(
++        r"\\begin\{(figure\*?|subfigure)\}(?:\[[^\]]*\])?.*?\\end\{\1\}",
++        re.DOTALL,
++    )
++    label_re = re.compile(r"\\label\{([^}]+)\}")
++    orphaned_labels = set()
++    changed = True
++    while changed:
++        changed = False
++        new_out = []
++        last = 0
++        for m in env_re.finditer(out):
++            body = m.group(0)
++            if "\\includegraphics" not in body:
++                for lm in label_re.finditer(body):
++                    orphaned_labels.add(lm.group(1))
++                new_out.append(out[last:m.start()])
++                last = m.end()
++                changed = True
++        new_out.append(out[last:])
++        out = "".join(new_out)
++
++    # Third pass: clean up dangling references to deleted figure labels so they
++    # do not compile to `??`. Remove an optional leading "Figure~"/"Fig. " word,
++    # the \ref command, and a trailing comma/space if it leaves a dangling one.
++    n_refs_cleaned = 0
++    for lbl in orphaned_labels:
++        lbl_esc = re.escape(lbl)
++        # "(see Figure~\ref{lbl})" / "Figure \ref{lbl}" / "\autoref{lbl}" etc.
++        ref_phrase = re.compile(
++            r"\s*\(?\s*(?:see\s+)?(?:Figure|Fig\.?|Table|Tab\.?)?~?\s*"
++            r"\\(?:auto|c|eq)?ref\{" + lbl_esc + r"\}\s*\)?",
++            re.IGNORECASE,
++        )
++        new_out, k = ref_phrase.subn(" ", out)
++        if k:
++            out = new_out
++            n_refs_cleaned += k
++    if n_refs_cleaned:
++        # tidy doubled spaces / space-before-punct introduced by removals
++        out = re.sub(r"[ \t]{2,}", " ", out)
++        out = re.sub(r"\s+([.,;:])", r"\1", out)
++
++    return out, n_remapped, n_deleted
++
++
++# Blocking LaTeX problems that must NOT be left in the final PDF. If template.log
++# still shows any of these, the reflection loop is forced to keep fixing.
++_BLOCKING_LOG_PATTERNS = [
++    r"! Undefined control sequence",
++    r"! Missing \$ inserted",
++    r"! LaTeX Error",
++    r"Undefined references",
++    r"There were undefined references",
++    r"Citation .* undefined",
++    r"Reference .* undefined",
++]
++
++
++def latex_blocking_errors(latex_folder, log_name="template.log"):
++    """P3: scan the pdflatex log for blocking errors / unresolved cross-refs so
++    the reflection loop is not allowed to early-exit on a still-broken document.
++
++    Returns a list of short error tags found (empty == clean). Unresolved `??`
++    surface as 'Undefined references'/'... undefined' in the .log even though the
++    run is nonstopmode and returns rc=0, so we key off the log, not the rc."""
++    log_path = osp.join(latex_folder, log_name)
++    if not osp.exists(log_path):
++        return []
++    try:
++        with open(log_path, "r", errors="ignore") as f:
++            text = f.read()
++    except OSError:
++        return []
++    found = []
++    for pat in _BLOCKING_LOG_PATTERNS:
++        m = re.search(pat, text)
++        if m:
++            found.append(m.group(0)[:80])
++    return found
++
++
+ def is_header_or_footer(line):
+     """
+     Returns True if the line is likely a header or footer.
+@@ -719,20 +894,32 @@ def filter_experiment_summaries(exp_summaries, step_name):
+         raise ValueError(f"Invalid step name: {step_name}")
+ 
+     filtered_summaries = {}
++    if not isinstance(exp_summaries, dict):
++        return filtered_summaries
+     for stage_name in exp_summaries.keys():
++        stage_val = exp_summaries[stage_name]
+         if stage_name in {"BASELINE_SUMMARY", "RESEARCH_SUMMARY"}:
++            # Partial / killed runs can leave a stage as an empty list instead of
++            # the expected dict — skip gracefully so recovery still produces a paper.
++            if not isinstance(stage_val, dict):
++                continue
+             filtered_summaries[stage_name] = {}
+-            for key in exp_summaries[stage_name].keys():
+-                if key in {"best node"}:
++            for key in stage_val.keys():
++                if key in {"best node"} and isinstance(stage_val[key], dict):
+                     filtered_summaries[stage_name][key] = {}
+-                    for node_key in exp_summaries[stage_name][key].keys():
++                    for node_key in stage_val[key].keys():
+                         if node_key in node_keys_to_keep:
+                             filtered_summaries[stage_name][key][node_key] = (
+-                                exp_summaries[stage_name][key][node_key]
++                                stage_val[key][node_key]
+                             )
+         elif stage_name == "ABLATION_SUMMARY" and step_name == "plot_aggregation":
++            if not isinstance(stage_val, list):
++                continue
+             filtered_summaries[stage_name] = {}
+-            for ablation_summary in exp_summaries[stage_name]:
++            for ablation_summary in stage_val:
++                if not isinstance(ablation_summary, dict) \
++                        or "ablation_name" not in ablation_summary:
++                    continue
+                 filtered_summaries[stage_name][ablation_summary["ablation_name"]] = {}
+                 for node_key in ablation_summary.keys():
+                     if node_key in node_keys_to_keep:
+@@ -854,6 +1041,26 @@ def gather_citations(base_folder, num_cite_rounds=20, small_model="gpt-4o-2024-0
          return citations_text if citations_text else None
  
  
@@ -161,7 +433,16 @@ index 297ef65..0c8a030 100644
  def perform_writeup(
      base_folder,
      citations_text=None,
-@@ -949,8 +969,17 @@ def perform_writeup(
+@@ -861,7 +1068,7 @@ def perform_writeup(
+     num_cite_rounds=20,
+     small_model="gpt-4o-2024-05-13",
+     big_model="o1-2024-12-17",
+-    n_writeup_reflections=3,
++    n_writeup_reflections=4,  # P3: more rounds; loop also force-fixes blocking errors
+     page_limit=4,
+ ):
+     pdf_file = osp.join(base_folder, f"{osp.basename(base_folder)}.pdf")
+@@ -949,8 +1156,17 @@ def perform_writeup(
                  f.write(content)
  
          # Generate VLM-based descriptions
@@ -180,7 +461,7 @@ index 297ef65..0c8a030 100644
              desc_map = {}
              for pf in plot_names:
                  ppath = osp.join(figures_dir, pf)
-@@ -1002,10 +1031,11 @@ def perform_writeup(
+@@ -1002,10 +1218,11 @@ def perform_writeup(
              print_debug=False,
          )
  
@@ -195,7 +476,40 @@ index 297ef65..0c8a030 100644
          with open(writeup_file, "w") as f:
              f.write(updated_latex_code)
  
-@@ -1092,11 +1122,8 @@ Ensure proper citation usage:
+@@ -1023,6 +1240,32 @@ def perform_writeup(
+             unused_figs = all_figs - used_figs
+             invalid_figs = used_figs - all_figs
+ 
++            # P2: deterministically repair broken figure references BEFORE
++            # compiling — fuzzy-remap to real files or strip the includegraphics
++            # (+ empty figure env). Prevents `Figure ??` / 0 embedded images
++            # instead of merely asking the LLM to fix it in the reflection prompt.
++            if invalid_figs:
++                repaired, n_remap, n_del = repair_invalid_figures(
++                    current_latex, all_figs
++                )
++                if repaired != current_latex:
++                    print(
++                        f"[yellow]P2 repaired figures: remapped {n_remap}, "
++                        f"deleted {n_del} (invalid were {sorted(invalid_figs)})[/yellow]"
++                    )
++                    with open(writeup_file, "w") as fo:
++                        fo.write(repaired)
++                    current_latex = repaired
++                    # Recompute reference sets after repair.
++                    referenced_figs_temp = re.findall(
++                        r"\\includegraphics(?:\[[^\]]*\])?{([^}]+)}", current_latex
++                    )
++                    used_figs = set(
++                        os.path.basename(fig) for fig in referenced_figs_temp
++                    )
++                    unused_figs = all_figs - used_figs
++                    invalid_figs = used_figs - all_figs
++
+             # Save PDF with reflection trial number
+             reflection_pdf = osp.join(
+                 base_folder, f"{osp.basename(base_folder)}_reflection{i+1}.pdf"
+@@ -1092,11 +1335,8 @@ Ensure proper citation usage:
              )
  
              # 2nd run:
@@ -209,7 +523,57 @@ index 297ef65..0c8a030 100644
                  if reflected_latex_code != current_latex:
                      final_text = reflected_latex_code
                      cleanup_map = {
-@@ -1159,11 +1186,8 @@ If you believe you are done with reflection, simply say: "I am done"."""
+@@ -1154,16 +1394,58 @@ If you believe you are done with reflection, simply say: "I am done"."""
+             )
+ 
+             if "I am done" in reflection_response:
++                # P3: do not allow exit while the compiled PDF still has blocking
++                # LaTeX errors / unresolved citations / `??` cross-refs.
++                blocking = latex_blocking_errors(latex_folder)
++                if blocking:
++                    print(
++                        "LLM said done, but blocking LaTeX issues remain — "
++                        f"forcing another reflection: {blocking}"
++                    )
++                    fix_prompt = (
++                        "You said you are done, but the LaTeX still has blocking "
++                        "errors that MUST be fixed before we can stop:\n"
++                        + "\n".join(f"  - {b}" for b in blocking)
++                        + "\n\nCommon causes: an \\includegraphics pointing at a "
++                        "file that does not exist (remove it or fix the name), an "
++                        "undefined \\cite key (use only keys present in the "
++                        "references.bib filecontents), a stray undefined control "
++                        "sequence, or a math command outside math mode.\n"
++                        "Return the ENTIRE corrected LaTeX in a single ```latex "
++                        "code block with NO unresolved references and NO "
++                        "placeholders."
++                    )
++                    reflection_response, msg_history = get_response_from_llm(
++                        prompt=fix_prompt,
++                        client=big_client,
++                        model=big_client_model,
++                        system_message=big_model_system_message,
++                        msg_history=msg_history[-1:],
++                        print_debug=False,
++                    )
++                    forced_latex = _extract_latex_block(reflection_response)
++                    if forced_latex is not None and forced_latex != current_latex:
++                        final_text = forced_latex
++                        cleanup_map = {
++                            "</end": r"\\end",
++                            "</begin": r"\\begin",
++                            "’": "'",
++                        }
++                        for bad_str, repl_str in cleanup_map.items():
++                            final_text = final_text.replace(bad_str, repl_str)
++                        final_text = re.sub(r"(\d+(?:\.\d+)?)%", r"\1\\%", final_text)
++                        with open(writeup_file, "w") as fo:
++                            fo.write(final_text)
++                        compile_latex(latex_folder, reflection_pdf)
++                    # continue to next reflection iteration (do not break)
++                    continue
+                 print(
+                     "LLM indicated it is done with reflections. Exiting reflection loop."
                  )
                  break
  
@@ -223,7 +587,7 @@ index 297ef65..0c8a030 100644
                  if reflected_latex_code != current_latex:
                      final_text = reflected_latex_code
                      cleanup_map = {
-@@ -1211,11 +1235,8 @@ USE MINIMAL EDITS TO OPTIMIZE THE PAGE LIMIT USAGE."""
+@@ -1211,11 +1493,8 @@ USE MINIMAL EDITS TO OPTIMIZE THE PAGE LIMIT USAGE."""
  
          print(f"reflection step {i+1}")
  
@@ -237,6 +601,15 @@ index 297ef65..0c8a030 100644
              if reflected_latex_code != current_latex:
                  final_text = reflected_latex_code
                  cleanup_map = {
+@@ -1264,7 +1543,7 @@ if __name__ == "__main__":
+     parser.add_argument(
+         "--writeup-reflections",
+         type=int,
+-        default=3,
++        default=4,
+         help="Number of reflection steps for the final LaTeX writeup.",
+     )
+     parser.add_argument(
 diff --git a/ai_scientist/perform_ideation_temp_free.py b/ai_scientist/perform_ideation_temp_free.py
 index 467530d..c44c9b5 100644
 --- a/ai_scientist/perform_ideation_temp_free.py
@@ -363,6 +736,31 @@ index 467530d..c44c9b5 100644
                  except Exception as e:
                      print(
                          f"Failed to parse LLM response. Response text:\n{response_text}"
+diff --git a/ai_scientist/perform_plotting.py b/ai_scientist/perform_plotting.py
+index af1a8e1..006d90d 100644
+--- a/ai_scientist/perform_plotting.py
++++ b/ai_scientist/perform_plotting.py
+@@ -45,6 +45,12 @@ Implement best practices:
+ - Do not use labels with underscores, e.g. "loss_vs_epoch" should be "loss vs epoch".
+ - For image examples, select a few categories/classes to showcase the diversity of results instead of showing a single category/class. Some can be included in the main paper, while the rest can go in the appendix.
+ 
++CRITICAL — handle HETEROGENEOUS experiment data robustly (this is the #1 cause of empty/blank figures):
++- Each experiment_data.npy is a dict that may contain MANY different top-level keys (one per dataset / variant / ablation / seed), and the key NAMES are NOT known in advance and differ from run to run. NEVER hardcode a single dataset key (e.g. 'synthetic_xxx'). ALWAYS discover keys dynamically: `d = np.load(path, allow_pickle=True).item(); for key in d.keys(): ...` and aggregate across ALL keys that are present.
++- Metric values appear in MULTIPLE shapes — handle them all defensively with isinstance checks: bare scalars; lists/arrays of numbers; lists of dicts (each dict carrying e.g. metric/epoch/value fields, or dataset_name/final_value/best_value fields); and nested dicts (e.g. a 'metrics' sub-dict). Detect the structure at runtime and extract values robustly; skip a key ONLY if it genuinely has no usable numeric data.
++- At the START of the script, load every .npy and PRINT a manifest: for each file, its list of top-level keys and the python type / length / shape of each value. This proves data coverage and aids debugging.
++- A figure with no plotted data is a FAILURE. If a particular subplot would be empty, skip it (never emit blank axes), but make sure the script actually pulls data from ALL available keys rather than a single guessed one.
++
+ Your output should be the entire Python aggregator script in triple backticks.
+ """
+ 
+@@ -76,6 +82,7 @@ Your generated Python script must:
+ 7) Make sure that every plot is unique and not duplicated from the original plots. Delete any duplicate plots if necessary.
+ 8) Each figure can have up to 3 subplots using fig, ax = plt.subplots(1, 3).
+ 9) Use a font size larger than the default for plot labels and titles to ensure they are readable in the final PDF paper.
++10) The .npy files may contain MANY heterogeneous top-level keys (datasets/variants/ablations/seeds) whose names you do NOT know in advance — iterate over ALL keys dynamically (NEVER hardcode a single key) and handle multiple metric value shapes (scalar / list-of-numbers / list-of-dicts / nested-dict) with defensive isinstance checks. First print a manifest of every key and value type found, then aggregate across all keys that hold usable data. Empty/blank figures are a failure.
+ 
+ 
+ Below are the summaries in JSON:
 diff --git a/ai_scientist/tools/semantic_scholar.py b/ai_scientist/tools/semantic_scholar.py
 index a23dfc1..8952cd9 100644
 --- a/ai_scientist/tools/semantic_scholar.py
@@ -427,10 +825,32 @@ index ad22cb6..0c7e155 100644
          system_message=compile_prompt_to_md(system_message) if system_message else None,
          user_message=compile_prompt_to_md(user_message) if user_message else None,
 diff --git a/ai_scientist/treesearch/interpreter.py b/ai_scientist/treesearch/interpreter.py
-index 0ad57cf..c218d31 100644
+index 0ad57cf..e3bbaf2 100644
 --- a/ai_scientist/treesearch/interpreter.py
 +++ b/ai_scientist/treesearch/interpreter.py
-@@ -254,6 +254,25 @@ class Interpreter:
+@@ -139,6 +139,21 @@ class Interpreter:
+             with open(self.agent_file_name, "w") as f:
+                 f.write(code)
+ 
++            # Pre-populate working/ with cached datasets to avoid slow downloads
++            _working = self.working_dir / "working"
++            _working.mkdir(exist_ok=True)
++            _cache = os.environ.get("DATASET_CACHE_DIR", "")
++            if _cache:
++                _cache_path = Path(_cache)
++                if _cache_path.is_dir():
++                    for _item in _cache_path.iterdir():
++                        _dst = _working / _item.name
++                        if not _dst.exists():
++                            try:
++                                os.symlink(str(_item), str(_dst))
++                            except Exception:
++                                pass
++
+             event_outq.put(("state:ready",))
+             try:
+                 exec(compile(code, self.agent_file_name, "exec"), global_scope)
+@@ -254,6 +269,25 @@ class Interpreter:
          # if the child process dies without this flag being set, it's an unexpected termination
          child_in_overtime = False
  
@@ -456,7 +876,7 @@ index 0ad57cf..c218d31 100644
          while True:
              try:
                  # check if the child is done
-@@ -276,6 +295,36 @@ class Interpreter:
+@@ -276,6 +310,36 @@ class Interpreter:
                  if self.timeout is None:
                      continue
                  running_time = time.time() - start_time
@@ -493,7 +913,7 @@ index 0ad57cf..c218d31 100644
                  if running_time > self.timeout:
                      # [TODO] handle this in a better way
                      assert reset_session, "Timeout ocurred in interactive session"
-@@ -284,12 +333,12 @@ class Interpreter:
+@@ -284,12 +348,12 @@ class Interpreter:
                      os.kill(self.process.pid, signal.SIGINT)  # type: ignore
                      child_in_overtime = True
                      # terminate if we're overtime by more than a minute
@@ -508,6 +928,42 @@ index 0ad57cf..c218d31 100644
                          break
  
          output: list[str] = []
+diff --git a/ai_scientist/treesearch/journal.py b/ai_scientist/treesearch/journal.py
+index a2a338a..8d20f0b 100644
+--- a/ai_scientist/treesearch/journal.py
++++ b/ai_scientist/treesearch/journal.py
+@@ -90,6 +90,10 @@ class Node(DataClassJsonMixin):
+     # -> always True if exc_type is not None or no valid metric
+     is_buggy: bool = field(default=None, kw_only=True)  # type: ignore
+     is_buggy_plots: bool = field(default=None, kw_only=True)
++    # signal channel: a node whose result is degenerate (e.g. accuracy saturated
++    # at ~100% so no effect is measurable) is zero-signal and excluded from
++    # good_nodes, so best-first never seeds/expands a degenerate result.
++    is_degenerate: bool = field(default=None, kw_only=True)
+ 
+     # ---- plotting ----
+     plot_data: dict = field(default_factory=dict, kw_only=True)
+@@ -253,6 +257,7 @@ class Node(DataClassJsonMixin):
+             },
+             "is_buggy": self.is_buggy,
+             "is_buggy_plots": self.is_buggy_plots,
++            "is_degenerate": self.is_degenerate,
+             "parent_id": None if self.parent is None else self.parent.id,
+             "children": [child.id for child in self.children] if self.children else [],
+             "plot_data": self.plot_data,
+@@ -403,7 +408,11 @@ class Journal:
+             f"[purple]all nodes ID and is_buggy/is_buggy_plots flags: {list_of_nodes}[/purple]"
+         )
+         return [
+-            n for n in self.nodes if n.is_buggy is False and n.is_buggy_plots is False
++            n
++            for n in self.nodes
++            if n.is_buggy is False
++            and n.is_buggy_plots is False
++            and n.is_degenerate is not True
+         ]
+ 
+     def get_node_by_id(self, node_id: str) -> Optional[Node]:
 diff --git a/ai_scientist/treesearch/log_summarization.py b/ai_scientist/treesearch/log_summarization.py
 index f0886d8..0a96760 100644
 --- a/ai_scientist/treesearch/log_summarization.py
@@ -528,28 +984,10 @@ index f0886d8..0a96760 100644
      return draft_summary, baseline_summary, research_summary, ablation_summary
  
 diff --git a/ai_scientist/treesearch/parallel_agent.py b/ai_scientist/treesearch/parallel_agent.py
-index 3f0ae59..ed526f0 100644
+index 3f0ae59..b9e2e3c 100644
 --- a/ai_scientist/treesearch/parallel_agent.py
 +++ b/ai_scientist/treesearch/parallel_agent.py
-@@ -300,9 +300,16 @@ class MinimalAgent:
-             "CRITICAL GPU REQUIREMENTS - Your code MUST include ALL of these:",
-             "  - At the start of your code, add these lines to handle GPU/CPU:",
-             "    ```python",
--            "    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')",
-+            "    import torch",
-+            "    if torch.cuda.is_available():",
-+            "        device = torch.device('cuda')",
-+            "    elif getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():",
-+            "        device = torch.device('mps')",
-+            "    else:",
-+            "        device = torch.device('cpu')",
-             "    print(f'Using device: {device}')",
-             "    ```",
-+            "  - If device is 'mps' (Apple Silicon): MPS is float32-only, so avoid float64/.double(); some FFT/sparse/advanced-index ops are unsupported and rely on the PYTORCH_ENABLE_MPS_FALLBACK=1 CPU fallback (already set by the runner).",
-             "  - ALWAYS move models to device using the `.to(device)` method",
-             "  - ALWAYS move input tensors to device using the `.to(device)` method",
-             "  - ALWAYS move model related tensors to device using the `.to(device)` method",
-@@ -342,7 +349,12 @@ class MinimalAgent:
+@@ -342,7 +342,12 @@ class MinimalAgent:
                  "The code should be a single-file python program that is self-contained and can be executed as-is.",
                  "No parts of the code should be skipped, don't terminate the code execution before finishing the script.",
                  "Your response should only contain a single code block.",
@@ -563,7 +1001,7 @@ index 3f0ae59..ed526f0 100644
                  'You can also use the "./working" directory to store any temporary files that your code needs to create.',
                  "Data saving requirements:",
                  "- Save all plottable data (metrics, losses, predictions, etc.) as numpy arrays using np.save()",
-@@ -669,9 +681,12 @@ class MinimalAgent:
+@@ -669,9 +674,12 @@ class MinimalAgent:
              code = extract_code(completion_text)
              nl_text = extract_text_up_to_code(completion_text)
  
@@ -579,7 +1017,7 @@ index 3f0ae59..ed526f0 100644
  
              print("Plan + code extraction failed, retrying...")
              prompt["Parsing Feedback"] = (
-@@ -1093,7 +1108,19 @@ class GPUManager:
+@@ -1093,7 +1101,19 @@ class GPUManager:
  
      def __init__(self, num_gpus: int):
          self.num_gpus = num_gpus
@@ -600,65 +1038,7 @@ index 3f0ae59..ed526f0 100644
          self.gpu_assignments: Dict[str, int] = {}  # process_id -> gpu_id
  
      def acquire_gpu(self, process_id: str) -> int:
-@@ -1139,6 +1166,19 @@ def get_gpu_count() -> int:
-         return 0
- 
- 
-+def mps_available() -> bool:
-+    """True if Apple Silicon Metal (MPS) backend is usable (Mac, no NVIDIA)."""
-+    try:
-+        import torch
-+
-+        return (
-+            getattr(torch.backends, "mps", None) is not None
-+            and torch.backends.mps.is_available()
-+        )
-+    except Exception:
-+        return False
-+
-+
- class ParallelAgent:
-     def __init__(
-         self,
-@@ -1168,16 +1208,34 @@ class ParallelAgent:
-         self.num_workers = cfg.agent.num_workers
-         self.num_gpus = get_gpu_count()
-         print(f"num_gpus: {self.num_gpus}")
--        if self.num_gpus == 0:
--            print("No GPUs detected, falling back to CPU-only mode")
-+        # Accelerator kind drives device handling: 'cuda' (NVIDIA, partitionable
-+        # across workers via CUDA_VISIBLE_DEVICES), 'mps' (Apple Silicon — a SINGLE
-+        # shared device that cannot be split like multi-GPU), or 'cpu'.
-+        if self.num_gpus > 0:
-+            self.accel_kind = "cuda"
-+            print(f"Detected {self.num_gpus} CUDA GPUs")
-+        elif mps_available():
-+            self.accel_kind = "mps"
-+            print("No NVIDIA GPU; using Apple MPS (single shared device — workers share it)")
-         else:
--            print(f"Detected {self.num_gpus} GPUs")
-+            self.accel_kind = "cpu"
-+            print("No GPUs detected, falling back to CPU-only mode")
- 
-         self.gpu_manager = GPUManager(self.num_gpus) if self.num_gpus > 0 else None
- 
-         if self.num_gpus > 0:
-             self.num_workers = min(self.num_workers, self.num_gpus)
-             logger.info(f"Limiting workers to {self.num_workers} to match GPU count")
-+        elif self.accel_kind == "mps":
-+            # MPS uses unified memory shared with the OS; many concurrent workers
-+            # on one shared device OOM easily. Cap conservatively (raise it if you
-+            # have lots of unified memory).
-+            mps_cap = min(self.num_workers, 2)
-+            if mps_cap != self.num_workers:
-+                logger.info(
-+                    f"Limiting workers {self.num_workers} -> {mps_cap} for shared MPS device (unified-memory safety)"
-+                )
-+            self.num_workers = mps_cap
- 
-         self.timeout = self.cfg.exec.timeout
-         self.executor = ProcessPoolExecutor(max_workers=self.num_workers)
-@@ -1235,9 +1293,12 @@ class ParallelAgent:
+@@ -1235,9 +1255,12 @@ class ParallelAgent:
              code = extract_code(completion_text)
              nl_text = extract_text_up_to_code(completion_text)
  
@@ -674,20 +1054,36 @@ index 3f0ae59..ed526f0 100644
              print("Plan + code extraction failed, retrying...")
              prompt["Parsing Feedback"] = (
                  "The code extraction failed. Make sure to use the format ```python ... ``` for the code blocks."
-@@ -1443,6 +1504,12 @@ class ParallelAgent:
-         if gpu_id is not None:
-             os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-             logger.info(f"Process {process_id} assigned to GPU {gpu_id}")
-+        elif mps_available():
-+            # Apple MPS is a single shared device with no CUDA_VISIBLE_DEVICES
-+            # analogue — don't blank CVD (some code reads that as "no GPU").
-+            # Enable CPU fallback for ops MPS doesn't implement.
-+            os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-+            logger.info(f"Process {process_id} running on Apple MPS")
-         else:
-             os.environ["CUDA_VISIBLE_DEVICES"] = ""
-             logger.info(f"Process {process_id} running on CPU")
-@@ -2148,8 +2215,40 @@ class ParallelAgent:
+@@ -1783,6 +1806,28 @@ class ParallelAgent:
+             # Convert result node to dict
+             print("Converting result to dict")
+             result_data = child_node.to_dict()
++            # Truncate oversized stdout buffers before returning through the
++            # multiprocessing pipe. A worker returning a multi-hundred-KB result
++            # (e.g. a hyperparameter/width sweep that dumps every run's metrics to
++            # stdout) can wedge the parent in future.result() — the classic large
++            # object pipe deadlock. Metrics live separately in result_data["metric"],
++            # so trimming the raw terminal capture is lossless for downstream use.
++            _MAX_TERM = 20000  # chars retained (head+tail) per stdout field
++            for _k in ("_term_out", "parse_term_out", "plot_term_out"):
++                _v = result_data.get(_k)
++                if isinstance(_v, str) and len(_v) > _MAX_TERM:
++                    _h = _MAX_TERM // 2
++                    result_data[_k] = (
++                        _v[:_h]
++                        + f"\n...[truncated {len(_v) - _MAX_TERM} chars]...\n"
++                        + _v[-_h:]
++                    )
++                elif isinstance(_v, list) and sum(len(str(x)) for x in _v) > _MAX_TERM:
++                    result_data[_k] = (
++                        _v[:50]
++                        + [f"...[truncated {len(_v) - 100} lines]..."]
++                        + _v[-50:]
++                    )
+             print(f"Result data keys: {result_data.keys()}")
+             print(f"Result data size: {len(str(result_data))} chars")
+             print("Returning result")
+@@ -2148,8 +2193,40 @@ class ParallelAgent:
          print("Waiting for results")
          for i, future in enumerate(futures):
              try:
@@ -730,7 +1126,7 @@ index 3f0ae59..ed526f0 100644
                  if "metric" in result_data:
                      print(f"metric type: {type(result_data['metric'])}")
                      print(f"metric contents: {result_data['metric']}")
-@@ -2168,17 +2267,6 @@ class ParallelAgent:
+@@ -2168,17 +2245,6 @@ class ParallelAgent:
                  # Add node to journal's list and assign its step number
                  self.journal.append(result_node)
                  print("Added result node to journal")
@@ -748,6 +1144,103 @@ index 3f0ae59..ed526f0 100644
              finally:
                  # Release GPU for this process if it was using one
                  process_id = f"worker_{i}"
+diff --git a/ai_scientist/treesearch/utils/metric.py b/ai_scientist/treesearch/utils/metric.py
+index e73f0c5..1dcf44f 100644
+--- a/ai_scientist/treesearch/utils/metric.py
++++ b/ai_scientist/treesearch/utils/metric.py
+@@ -338,3 +338,44 @@ class WorstMetricValue(MetricValue):
+ 
+     def __str__(self):
+         return super().__str__()
++
++
++def is_degenerate_metric(metric, sat_hi=0.98, sat_lo=0.02):
++    """Signal channel for node evaluation: True if an accuracy-class metric is
++    degenerate (saturated >= sat_hi or collapsed <= sat_lo so no effect is
++    measurable across conditions). Reads only the MetricValue a node already
++    has -- no re-run, no file I/O. Conservative: returns False whenever it
++    cannot tell, so it never vetoes a node it does not understand.
++    """
++    if metric is None:
++        return False
++    val = getattr(metric, "value", None)
++    if val is None:
++        return False
++
++    def _norm(x):
++        return x / 100.0 if x > 1.5 else float(x)
++
++    finals = []
++    if isinstance(val, dict) and "metric_names" in val:
++        for mn in val.get("metric_names", []):
++            if mn.get("lower_is_better"):
++                continue
++            name = str(mn.get("metric_name", "")).lower()
++            if not any(t in name for t in ("acc", "f1", "auc")):
++                continue
++            for d in mn.get("data", []):
++                fv = d.get("final_value", d.get("best_value"))
++                if isinstance(fv, (int, float)) and not isinstance(fv, bool):
++                    finals.append(_norm(fv))
++    elif isinstance(val, dict):
++        for v in val.values():
++            if isinstance(v, (int, float)) and not isinstance(v, bool):
++                finals.append(_norm(v))
++    elif isinstance(val, (int, float)) and not isinstance(val, bool):
++        finals.append(_norm(val))
++
++    if not finals:
++        return False
++    saturated = sum(1 for f in finals if f >= sat_hi or f <= sat_lo)
++    return saturated / len(finals) > 0.5
+diff --git a/ai_scientist/utils/token_tracker.py b/ai_scientist/utils/token_tracker.py
+index 5805024..8d3dbb3 100644
+--- a/ai_scientist/utils/token_tracker.py
++++ b/ai_scientist/utils/token_tracker.py
+@@ -162,11 +162,17 @@ def track_token_usage(func):
+                 model,
+                 result.usage.prompt_tokens,
+                 result.usage.completion_tokens,
+-                result.usage.completion_tokens_details.reasoning_tokens,
++                getattr(
++                    result.usage.completion_tokens_details, "reasoning_tokens", 0
++                )
++                or 0,
+                 (
+-                    result.usage.prompt_tokens_details.cached_tokens
+-                    if hasattr(result.usage, "prompt_tokens_details")
+-                    else 0
++                    getattr(
++                        getattr(result.usage, "prompt_tokens_details", None),
++                        "cached_tokens",
++                        0,
++                    )
++                    or 0
+                 ),
+             )
+             # Add interaction details
+@@ -200,11 +206,17 @@ def track_token_usage(func):
+                 model,
+                 result.usage.prompt_tokens,
+                 result.usage.completion_tokens,
+-                result.usage.completion_tokens_details.reasoning_tokens,
++                getattr(
++                    result.usage.completion_tokens_details, "reasoning_tokens", 0
++                )
++                or 0,
+                 (
+-                    result.usage.prompt_tokens_details.cached_tokens
+-                    if hasattr(result.usage, "prompt_tokens_details")
+-                    else 0
++                    getattr(
++                        getattr(result.usage, "prompt_tokens_details", None),
++                        "cached_tokens",
++                        0,
++                    )
++                    or 0
+                 ),
+             )
+             # Add interaction details
 diff --git a/ai_scientist/vlm.py b/ai_scientist/vlm.py
 index 2535797..590ed38 100644
 --- a/ai_scientist/vlm.py
@@ -775,7 +1268,7 @@ index 2535797..590ed38 100644
          "gpt-4o-2024-08-06",
          "gpt-4o-2024-11-20",
 diff --git a/bfts_config.yaml b/bfts_config.yaml
-index 189b45b..2f828ef 100644
+index 189b45b..f286e02 100644
 --- a/bfts_config.yaml
 +++ b/bfts_config.yaml
 @@ -9,21 +9,25 @@ log_dir: logs
@@ -797,7 +1290,7 @@ index 189b45b..2f828ef 100644
 +  # This is now a soft target: interpreter.py grants grace while a run keeps producing
 +  # output (e.g. loss still printing) and only hard-stops at ~2x this value or once the
 +  # run goes silent past the timeout. Lower it back to 3600 to mimic the paper default.
-+  timeout: 7200
++  timeout: 28800
    agent_file_name: runfile.py
    format_tb_ipython: False
  
@@ -837,7 +1330,7 @@ index 189b45b..2f828ef 100644
    # LLM settings for coding
    code:
 -    model: anthropic.claude-3-5-sonnet-20241022-v2:0
-+    model: gpt-5.5   # ROUTER (quality-first; reasoning model, slow)
++    model: gpt-5.5   # ROUTER (reasoning model, supports tool_choice)
      temp: 1.0
 -    max_tokens: 12000
 +    max_tokens: 32000
@@ -874,121 +1367,16 @@ index 189b45b..2f828ef 100644
 -  #   model: gpt-4o
 -  #   temp: 0.3
 +  # summary / select_node use defaults (gpt-4o via _route_model)
-diff --git a/ai_scientist/tools/openalex_search.py b/ai_scientist/tools/openalex_search.py
-new file mode 100644
-index 0000000..d2b6fc5
---- /dev/null
-+++ b/ai_scientist/tools/openalex_search.py
-@@ -0,0 +1,112 @@
-+"""OpenAlex-backed drop-in replacement for tools.semantic_scholar.search_for_papers.
-+
-+Why: the self-hosted setup has no Semantic Scholar API key (S2 returns 429 and
-+citations come out as "(?)"), and export.arxiv.org is not reachable from the GPU
-+server. OpenAlex (https://api.openalex.org) is free, needs no key, IS reachable,
-+and returns rich metadata. We reshape its response into the EXACT dict structure
-+the v2 writeup expects: each paper has title/authors/venue/year/abstract plus
-+citationStyles.bibtex (which OpenAlex does not provide, so we synthesize it).
-+"""
-+import os
-+import re
-+import time
-+import warnings
-+from typing import Dict, List, Optional, Union
-+
-+import backoff
-+import requests
-+
-+OPENALEX_BASE = "https://api.openalex.org/works"
-+# OpenAlex "polite pool" — a contact email yields higher, more stable rate limits.
-+MAILTO = os.getenv("OPENALEX_MAILTO", "ai-scientist@example.com")
-+
-+
-+def _reconstruct_abstract(inv_index: Optional[dict]) -> str:
-+    """OpenAlex returns abstract as an inverted index {word: [positions]}."""
-+    if not inv_index:
-+        return ""
-+    positions = {}
-+    for word, idxs in inv_index.items():
-+        for i in idxs:
-+            positions[i] = word
-+    if not positions:
-+        return ""
-+    text = " ".join(positions[i] for i in range(max(positions) + 1) if i in positions)
-+    return text[:1500]  # keep prompt context bounded
-+
-+
-+def _clean(s: str) -> str:
-+    return (s or "").replace("{", "").replace("}", "").strip()
-+
-+
-+def _make_bibtex(work: dict, names: List[str], venue: str) -> str:
-+    year = work.get("publication_year") or ""
-+    title = _clean(work.get("title") or "")
-+    doi = (work.get("doi") or "").replace("https://doi.org/", "")
-+    author_field = " and ".join(names) if names else "Unknown"
-+    first_last = names[0].split()[-1] if names else "anon"
-+    first_word = re.sub(r"[^A-Za-z]", "", (title.split()[0] if title else "paper")) or "ref"
-+    key = re.sub(r"[^A-Za-z0-9]", "", f"{first_last}{year}{first_word}").lower() or "ref"
-+    # entry type: inproceedings if the venue looks like a conference/workshop
-+    is_conf = bool(re.search(r"conference|workshop|proceedings|symposium|meeting", venue, re.I))
-+    etype = "inproceedings" if is_conf else "article"
-+    field = "booktitle" if is_conf else "journal"
-+    lines = [f"@{etype}{{{key},"]
-+    lines.append(f" title = {{{title}}},")
-+    lines.append(f" author = {{{author_field}}},")
-+    if venue:
-+        lines.append(f" {field} = {{{_clean(venue)}}},")
-+    if year:
-+        lines.append(f" year = {{{year}}},")
-+    if doi:
-+        lines.append(f" doi = {{{doi}}},")
-+    lines.append("}")
-+    return "\n".join(lines)
-+
-+
-+@backoff.on_exception(
-+    backoff.expo, requests.exceptions.RequestException, max_tries=5
-+)
-+def search_for_papers(query, result_limit=10) -> Union[None, List[Dict]]:
-+    if not query:
-+        return None
-+    rsp = requests.get(
-+        OPENALEX_BASE,
-+        params={
-+            "search": query,
-+            "per-page": result_limit,
-+            "mailto": MAILTO,
-+            "sort": "relevance_score:desc",
-+        },
-+        timeout=30,
-+    )
-+    print(f"OpenAlex Status: {rsp.status_code} (query={query[:60]!r})")
-+    rsp.raise_for_status()
-+    works = rsp.json().get("results", [])
-+    if not works:
-+        return None
-+    papers: List[Dict] = []
-+    for w in works:
-+        authorships = w.get("authorships", []) or []
-+        names = [
-+            a.get("author", {}).get("display_name", "")
-+            for a in authorships
-+            if a.get("author")
-+        ]
-+        names = [n for n in names if n][:10]
-+        pl = w.get("primary_location") or {}
-+        src = (pl.get("source") or {}) if pl else {}
-+        venue = src.get("display_name") or ""
-+        papers.append(
-+            {
-+                "title": _clean(w.get("title") or ""),
-+                "authors": ", ".join(names[:8]) or "Unknown",
-+                "venue": venue or "n/a",
-+                "year": w.get("publication_year") or "",
-+                "abstract": _reconstruct_abstract(w.get("abstract_inverted_index")),
-+                "citationCount": w.get("cited_by_count", 0),
-+                "citationStyles": {"bibtex": _make_bibtex(w, names, venue)},
-+            }
-+        )
-+    time.sleep(0.3)
-+    return papers
+diff --git a/launch_scientist_bfts.py b/launch_scientist_bfts.py
+index e854af0..88870ca 100644
+--- a/launch_scientist_bfts.py
++++ b/launch_scientist_bfts.py
+@@ -115,7 +115,7 @@ def parse_arguments():
+     parser.add_argument(
+         "--model_review",
+         type=str,
+-        default="gpt-4o-2024-11-20",
++        default="gpt-5.4-pro",
+         help="Model to use for review main text and captions",
+     )
+     parser.add_argument(
