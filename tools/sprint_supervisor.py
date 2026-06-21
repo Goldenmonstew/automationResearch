@@ -27,10 +27,97 @@ import json
 import os
 import os.path as osp
 import re
+import signal
 import subprocess
 import time
 
 FRESH_SECS = 30 * 60          # journal younger than this => tree considered live
+
+# Deadlock auto-recovery: the dominant unattended-failure mode is the
+# ProcessPoolExecutor futex deadlock — workers stall, the launcher process stays
+# *alive* (stuck in futex_wait), so liveness-by-pid wrongly reads "RUNNING"
+# forever. The only signal that separates a real deadlock from a legitimately
+# long-running node (8h exec timeout) is CPU: a deadlocked tree burns ~0 CPU.
+DEADLOCK_STALE_SECS = 30 * 60   # journal idle at least this long before we suspect
+CPU_SAMPLE_SECS = 3.0           # window for instantaneous CPU sampling
+CPU_BUSY_TICKS = 50             # >= this many CPU-ticks across the tree => busy
+
+
+def _stat_after_paren(pid):
+    """/proc/<pid>/stat fields after the '(comm)' group: [state, ppid, ...]."""
+    with open("/proc/%s/stat" % pid) as f:
+        return f.read().rsplit(")", 1)[1].split()
+
+
+def descendants(root_pids):
+    """All PIDs in the process trees rooted at root_pids (inclusive)."""
+    children = {}
+    for d in glob.glob("/proc/[0-9]*"):
+        try:
+            pid = int(osp.basename(d))
+            ppid = int(_stat_after_paren(pid)[1])
+        except (OSError, ValueError, IndexError):
+            continue
+        children.setdefault(ppid, []).append(pid)
+    seen, stack = set(), [int(p) for p in root_pids]
+    while stack:
+        x = stack.pop()
+        if x in seen:
+            continue
+        seen.add(x)
+        stack.extend(children.get(x, []))
+    return seen
+
+
+def _tree_cpu_ticks(pids):
+    total = 0
+    for pid in pids:
+        try:
+            f = _stat_after_paren(pid)
+            total += int(f[11]) + int(f[12])   # utime + stime
+        except (OSError, ValueError, IndexError):
+            continue
+    return total
+
+
+def tree_cpu_busy(root_pids):
+    """True if the process tree burns real CPU over a short window (actually
+    computing) vs. stuck in futex/pipe wait (deadlocked)."""
+    tree = descendants(root_pids)
+    t0 = _tree_cpu_ticks(tree)
+    time.sleep(CPU_SAMPLE_SECS)
+    t1 = _tree_cpu_ticks(tree)
+    return (t1 - t0) >= CPU_BUSY_TICKS
+
+
+def newest_journal_mtime(root):
+    latest = 0
+    for j in glob.glob(osp.join(root, "experiments", "*", "logs", "*",
+                                "stage_*", "journal.json")):
+        latest = max(latest, osp.getmtime(j))
+    return latest
+
+
+def root_deadlocked(root, launcher_pids):
+    """Launcher alive + journal idle past DEADLOCK_STALE_SECS + tree not burning
+    CPU => ProcessPoolExecutor futex deadlock."""
+    if not launcher_pids:
+        return False
+    latest = newest_journal_mtime(root)
+    if latest and (time.time() - latest) < DEADLOCK_STALE_SECS:
+        return False
+    return not tree_cpu_busy(launcher_pids)
+
+
+def kill_tree(root_pids):
+    killed = 0
+    for pid in descendants(root_pids):
+        try:
+            os.kill(pid, signal.SIGKILL)
+            killed += 1
+        except (OSError, ValueError):
+            pass
+    return killed
 
 
 def now():
@@ -184,7 +271,18 @@ def main():
             if r.get("chain_pid") and pid_alive(r["chain_pid"]))
         rows = []
         for root in args.roots:
-            live = bool(launcher_pids_in_root(root))
+            launcher_pids = launcher_pids_in_root(root)
+            live = bool(launcher_pids)
+            if live and root_deadlocked(root, launcher_pids):
+                n = 0 if args.dry_run else kill_tree(launcher_pids)
+                print(f"[deadlock] {root}: launcher alive but journal stale + "
+                      f"CPU idle -> killed {n} procs (will fire recovery chain)")
+                ne = newest_exp_in_root(root)
+                if ne:
+                    ledger.setdefault(ne, {"root": root}).setdefault(
+                        "history", []).append(
+                        {"t": now(), "event": f"DEADLOCK auto-killed {n} procs"})
+                live = False   # reclassify as killed -> NEEDS_CHAIN this pass
             for exp in sorted(glob.glob(osp.join(root, "experiments", "*"))):
                 if not osp.isdir(exp):
                     continue
