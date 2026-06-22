@@ -109,12 +109,33 @@ def newest_journal_mtime(root):
     return latest
 
 
+def newest_activity_mtime(root):
+    """Newest mtime of ANY file under experiments/ — journals, stage json, node
+    working dirs, logs, intermediate outputs. A node mid-execution or mid-VLM
+    call writes files well before the stage journal flushes, so journal-only
+    mtime can read 0 on a perfectly healthy run. Combined with a momentary CPU
+    dip while a worker awaits an LLM/VLM round-trip, that falsely tripped the
+    deadlock killer ~10 min into a healthy run (observed on grok_fix). Tracking
+    any file activity avoids the misfire while still catching a true deadlock
+    (a wedged tree writes nothing for > DEADLOCK_STALE_SECS)."""
+    latest = 0
+    for d, _dirs, files in os.walk(osp.join(root, "experiments")):
+        for fn in files:
+            try:
+                latest = max(latest, osp.getmtime(osp.join(d, fn)))
+            except OSError:
+                continue
+    return latest
+
+
 def root_deadlocked(root, launcher_pids):
-    """Launcher alive + journal idle past DEADLOCK_STALE_SECS + tree not burning
-    CPU => ProcessPoolExecutor futex deadlock."""
+    """Launcher alive + experiment dir idle past DEADLOCK_STALE_SECS + tree not
+    burning CPU => ProcessPoolExecutor deadlock. Keyed on any-file activity (not
+    journal-only) so a node awaiting a VLM/LLM round-trip — CPU briefly idle,
+    journal not yet flushed — is not mistaken for a wedge and killed."""
     if not launcher_pids:
         return False
-    latest = newest_journal_mtime(root)
+    latest = newest_activity_mtime(root)
     if latest and (time.time() - latest) < DEADLOCK_STALE_SECS:
         return False
     return not tree_cpu_busy(launcher_pids)
