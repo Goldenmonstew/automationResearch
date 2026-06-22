@@ -67,6 +67,7 @@ SUPLOG=$BASE/$LANE.supervisor.log
 nohup env OPENAI_API_KEY="$OPENAI_API_KEY" OPENAI_BASE_URL="$OPENAI_BASE_URL" PATH="$PATH" \
   "$PY" -u "$H/automationResearch/tools/sprint_supervisor.py" \
   --roots "$DST" --sprint_dir "$SP" --interval "$INTERVAL" \
+  --ledger "$BASE/$LANE.ledger.json" \
   > "$SUPLOG" 2>&1 &
 SUP_PID=$!
 echo "[auto_paper] supervisor PID $SUP_PID -> $SUPLOG"

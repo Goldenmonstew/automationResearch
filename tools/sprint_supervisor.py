@@ -142,7 +142,10 @@ def load_ledger(path):
 
 
 def save_ledger(path, ledger):
-    tmp = path + ".tmp"
+    # pid-unique tmp: defends against two supervisors pointed at the same ledger
+    # racing on a shared "<path>.tmp" (one's os.replace then hits a missing tmp
+    # -> FileNotFoundError). Primary fix is the per-lane ledger path below.
+    tmp = "%s.%d.tmp" % (path, os.getpid())
     with open(tmp, "w") as f:
         json.dump(ledger, f, indent=1)
     os.replace(tmp, path)
@@ -270,9 +273,25 @@ def main():
     p.add_argument("--dry_run", action="store_true")
     p.add_argument("--max_chains", type=int, default=2)
     p.add_argument("--max_retries", type=int, default=1)
+    p.add_argument("--ledger", default=None,
+                   help="ledger path. Default derives a per-lane name when a "
+                        "single root is given, so concurrent supervisors (one "
+                        "per auto_paper lane sharing --sprint_dir) never write "
+                        "the same file and corrupt it.")
     args = p.parse_args()
 
-    ledger_path = osp.join(args.sprint_dir, "supervisor_ledger.json")
+    if args.ledger:
+        ledger_path = args.ledger
+    elif len(args.roots) == 1:
+        # Per-lane isolation: root is .../auto/<lane>/AI-Scientist-v2, so the
+        # parent dir name uniquely tags the ledger. Without this, concurrent
+        # lane supervisors share one supervisor_ledger.json and corrupt it
+        # (JSONDecodeError "Extra data" / missing-.tmp), then crash.
+        lane = osp.basename(osp.dirname(osp.realpath(args.roots[0])))
+        ledger_path = osp.join(args.sprint_dir,
+                               "supervisor_ledger_%s.json" % lane)
+    else:
+        ledger_path = osp.join(args.sprint_dir, "supervisor_ledger.json")
     reviews_dir = osp.join(args.sprint_dir, "reviews")
 
     while True:
