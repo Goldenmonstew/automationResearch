@@ -1,0 +1,223 @@
+{
+ "meta": {
+  "p": 59,
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "hp": {
+   "batch_size": 1024,
+   "lr": 0.0008,
+   "weight_decay": 0.1,
+   "max_steps": 14000,
+   "noise_alpha": 0.08,
+   "iso_alpha": 0.01
+  },
+  "device": "cuda",
+  "seeds_done": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "elapsed_s": 1271.0
+ },
+ "diag": {
+  "0": {
+   "REPLICATE": {
+    "true_val_acc": 1.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_PERM": {
+    "true_val_acc": 0.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_RANDOM": {
+    "true_val_acc": 0.0185,
+    "own_label_acc": 1.0
+   }
+  },
+  "1": {
+   "REPLICATE": {
+    "true_val_acc": 1.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_PERM": {
+    "true_val_acc": 0.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_RANDOM": {
+    "true_val_acc": 0.0172,
+    "own_label_acc": 1.0
+   }
+  },
+  "2": {
+   "REPLICATE": {
+    "true_val_acc": 1.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_PERM": {
+    "true_val_acc": 0.0172,
+    "own_label_acc": 1.0
+   },
+   "DECOY_RANDOM": {
+    "true_val_acc": 0.0168,
+    "own_label_acc": 1.0
+   }
+  },
+  "3": {
+   "REPLICATE": {
+    "true_val_acc": 1.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_PERM": {
+    "true_val_acc": 0.0472,
+    "own_label_acc": 1.0
+   },
+   "DECOY_RANDOM": {
+    "true_val_acc": 0.0172,
+    "own_label_acc": 1.0
+   }
+  },
+  "4": {
+   "REPLICATE": {
+    "true_val_acc": 1.0,
+    "own_label_acc": 1.0
+   },
+   "DECOY_PERM": {
+    "true_val_acc": 0.0185,
+    "own_label_acc": 1.0
+   },
+   "DECOY_RANDOM": {
+    "true_val_acc": 0.0185,
+    "own_label_acc": 1.0
+   }
+  }
+ },
+ "results": [
+  {
+   "seed": 0,
+   "ref_type": "REPLICATE",
+   "condition": "aligned",
+   "grok_step": 3000,
+   "final_val_acc": 0.9963,
+   "ref_true_val_acc": 1.0
+  },
+  {
+   "seed": 0,
+   "ref_type": "DECOY_PERM",
+   "condition": "aligned",
+   "grok_step": 12750,
+   "final_val_acc": 0.9639,
+   "ref_true_val_acc": 0.0
+  },
+  {
+   "seed": 0,
+   "ref_type": "DECOY_RANDOM",
+   "condition": "aligned",
+   "grok_step": null,
+   "final_val_acc": 0.2347,
+   "ref_true_val_acc": 0.0185
+  },
+  {
+   "seed": 1,
+   "ref_type": "REPLICATE",
+   "condition": "aligned",
+   "grok_step": 3500,
+   "final_val_acc": 0.993,
+   "ref_true_val_acc": 1.0
+  },
+  {
+   "seed": 1,
+   "ref_type": "DECOY_PERM",
+   "condition": "aligned",
+   "grok_step": 14000,
+   "final_val_acc": 0.952,
+   "ref_true_val_acc": 0.0
+  },
+  {
+   "seed": 1,
+   "ref_type": "DECOY_RANDOM",
+   "condition": "aligned",
+   "grok_step": null,
+   "final_val_acc": 0.2355,
+   "ref_true_val_acc": 0.0172
+  },
+  {
+   "seed": 2,
+   "ref_type": "REPLICATE",
+   "condition": "aligned",
+   "grok_step": 2250,
+   "final_val_acc": 1.0,
+   "ref_true_val_acc": 1.0
+  },
+  {
+   "seed": 2,
+   "ref_type": "DECOY_PERM",
+   "condition": "aligned",
+   "grok_step": 9000,
+   "final_val_acc": 0.9959,
+   "ref_true_val_acc": 0.0172
+  },
+  {
+   "seed": 2,
+   "ref_type": "DECOY_RANDOM",
+   "condition": "aligned",
+   "grok_step": null,
+   "final_val_acc": 0.2269,
+   "ref_true_val_acc": 0.0168
+  },
+  {
+   "seed": 3,
+   "ref_type": "REPLICATE",
+   "condition": "aligned",
+   "grok_step": 2750,
+   "final_val_acc": 0.9971,
+   "ref_true_val_acc": 1.0
+  },
+  {
+   "seed": 3,
+   "ref_type": "DECOY_PERM",
+   "condition": "aligned",
+   "grok_step": 13750,
+   "final_val_acc": 0.9495,
+   "ref_true_val_acc": 0.0472
+  },
+  {
+   "seed": 3,
+   "ref_type": "DECOY_RANDOM",
+   "condition": "aligned",
+   "grok_step": null,
+   "final_val_acc": 0.2372,
+   "ref_true_val_acc": 0.0172
+  },
+  {
+   "seed": 4,
+   "ref_type": "REPLICATE",
+   "condition": "aligned",
+   "grok_step": 2500,
+   "final_val_acc": 0.9992,
+   "ref_true_val_acc": 1.0
+  },
+  {
+   "seed": 4,
+   "ref_type": "DECOY_PERM",
+   "condition": "aligned",
+   "grok_step": 9250,
+   "final_val_acc": 0.9988,
+   "ref_true_val_acc": 0.0185
+  },
+  {
+   "seed": 4,
+   "ref_type": "DECOY_RANDOM",
+   "condition": "aligned",
+   "grok_step": null,
+   "final_val_acc": 0.2306,
+   "ref_true_val_acc": 0.0185
+  }
+ ]
+}
