@@ -984,10 +984,74 @@ index f0886d8..0a96760 100644
      return draft_summary, baseline_summary, research_summary, ablation_summary
  
 diff --git a/ai_scientist/treesearch/parallel_agent.py b/ai_scientist/treesearch/parallel_agent.py
-index 3f0ae59..b9e2e3c 100644
+index 3f0ae59..6c5ee4f 100644
 --- a/ai_scientist/treesearch/parallel_agent.py
 +++ b/ai_scientist/treesearch/parallel_agent.py
-@@ -342,7 +342,12 @@ class MinimalAgent:
+@@ -38,6 +38,45 @@ def _safe_pickle_test(obj, name="object"):
+         return False
+ 
+ 
++def _spill_worker_result(result_data):
++    """Spill a worker's result dict to a temp pickle and return a small path
++    handle. A worker returning a 100KB+ dict (code + metric + parse buffers on a
++    multi-config sweep) can wedge the parent in future.result() — the large-object
++    ProcessPoolExecutor pipe deadlock. fix A trims stdout, but code/metric must
++    stay intact, so keeping the big object off the pipe is the only lossless cure.
++    Uses pickle (the wire format the pool already requires) so spilling never
++    rejects an object the pipe would have accepted. Falls back to inline on error."""
++    try:
++        import tempfile
++        fd, path = tempfile.mkstemp(prefix="bfts_node_", suffix=".pkl")
++        with os.fdopen(fd, "wb") as f:
++            pickle.dump(result_data, f)
++        return {"__spilled_result__": path}
++    except Exception as e:
++        logger.error(f"[spill] falling back to inline result: {e}")
++        return result_data
++
++
++def _read_worker_result(obj):
++    """Inverse of _spill_worker_result: if obj is a spill handle, load the dict
++    from disk and remove the temp file; otherwise return obj unchanged."""
++    if isinstance(obj, dict) and "__spilled_result__" in obj:
++        path = obj["__spilled_result__"]
++        # Safe to unpickle: this file was written moments ago by this run's own
++        # worker (mkstemp path, same host, never leaves the box). The pool already
++        # round-trips this exact object through pickle over its pipe — spilling to
++        # disk changes the transport, not the trust boundary. No external input.
++        try:
++            with open(path, "rb") as f:
++                return pickle.load(f)
++        finally:
++            try:
++                os.remove(path)
++            except OSError:
++                pass
++    return obj
++
++
+ def _parse_keyword_prefix_response(
+     response: str, keyword_prefix1: str, keyword_prefix2: str
+ ) -> Tuple[Optional[str], Optional[str]]:
+@@ -300,9 +339,16 @@ class MinimalAgent:
+             "CRITICAL GPU REQUIREMENTS - Your code MUST include ALL of these:",
+             "  - At the start of your code, add these lines to handle GPU/CPU:",
+             "    ```python",
+-            "    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')",
++            "    import torch",
++            "    if torch.cuda.is_available():",
++            "        device = torch.device('cuda')",
++            "    elif getattr(torch.backends, 'mps', None) is not None and torch.backends.mps.is_available():",
++            "        device = torch.device('mps')",
++            "    else:",
++            "        device = torch.device('cpu')",
+             "    print(f'Using device: {device}')",
+             "    ```",
++            "  - If device is 'mps' (Apple Silicon): MPS is float32-only, so avoid float64/.double(); some FFT/sparse/advanced-index ops are unsupported and rely on the PYTORCH_ENABLE_MPS_FALLBACK=1 CPU fallback (already set by the runner).",
+             "  - ALWAYS move models to device using the `.to(device)` method",
+             "  - ALWAYS move input tensors to device using the `.to(device)` method",
+             "  - ALWAYS move model related tensors to device using the `.to(device)` method",
+@@ -342,7 +388,12 @@ class MinimalAgent:
                  "The code should be a single-file python program that is self-contained and can be executed as-is.",
                  "No parts of the code should be skipped, don't terminate the code execution before finishing the script.",
                  "Your response should only contain a single code block.",
@@ -1001,7 +1065,7 @@ index 3f0ae59..b9e2e3c 100644
                  'You can also use the "./working" directory to store any temporary files that your code needs to create.',
                  "Data saving requirements:",
                  "- Save all plottable data (metrics, losses, predictions, etc.) as numpy arrays using np.save()",
-@@ -669,9 +674,12 @@ class MinimalAgent:
+@@ -669,9 +720,12 @@ class MinimalAgent:
              code = extract_code(completion_text)
              nl_text = extract_text_up_to_code(completion_text)
  
@@ -1017,7 +1081,7 @@ index 3f0ae59..b9e2e3c 100644
  
              print("Plan + code extraction failed, retrying...")
              prompt["Parsing Feedback"] = (
-@@ -1093,7 +1101,19 @@ class GPUManager:
+@@ -1093,7 +1147,19 @@ class GPUManager:
  
      def __init__(self, num_gpus: int):
          self.num_gpus = num_gpus
@@ -1038,7 +1102,65 @@ index 3f0ae59..b9e2e3c 100644
          self.gpu_assignments: Dict[str, int] = {}  # process_id -> gpu_id
  
      def acquire_gpu(self, process_id: str) -> int:
-@@ -1235,9 +1255,12 @@ class ParallelAgent:
+@@ -1139,6 +1205,19 @@ def get_gpu_count() -> int:
+         return 0
+ 
+ 
++def mps_available() -> bool:
++    """True if Apple Silicon Metal (MPS) backend is usable (Mac, no NVIDIA)."""
++    try:
++        import torch
++
++        return (
++            getattr(torch.backends, "mps", None) is not None
++            and torch.backends.mps.is_available()
++        )
++    except Exception:
++        return False
++
++
+ class ParallelAgent:
+     def __init__(
+         self,
+@@ -1168,16 +1247,34 @@ class ParallelAgent:
+         self.num_workers = cfg.agent.num_workers
+         self.num_gpus = get_gpu_count()
+         print(f"num_gpus: {self.num_gpus}")
+-        if self.num_gpus == 0:
+-            print("No GPUs detected, falling back to CPU-only mode")
++        # Accelerator kind drives device handling: 'cuda' (NVIDIA, partitionable
++        # across workers via CUDA_VISIBLE_DEVICES), 'mps' (Apple Silicon — a SINGLE
++        # shared device that cannot be split like multi-GPU), or 'cpu'.
++        if self.num_gpus > 0:
++            self.accel_kind = "cuda"
++            print(f"Detected {self.num_gpus} CUDA GPUs")
++        elif mps_available():
++            self.accel_kind = "mps"
++            print("No NVIDIA GPU; using Apple MPS (single shared device — workers share it)")
+         else:
+-            print(f"Detected {self.num_gpus} GPUs")
++            self.accel_kind = "cpu"
++            print("No GPUs detected, falling back to CPU-only mode")
+ 
+         self.gpu_manager = GPUManager(self.num_gpus) if self.num_gpus > 0 else None
+ 
+         if self.num_gpus > 0:
+             self.num_workers = min(self.num_workers, self.num_gpus)
+             logger.info(f"Limiting workers to {self.num_workers} to match GPU count")
++        elif self.accel_kind == "mps":
++            # MPS uses unified memory shared with the OS; many concurrent workers
++            # on one shared device OOM easily. Cap conservatively (raise it if you
++            # have lots of unified memory).
++            mps_cap = min(self.num_workers, 2)
++            if mps_cap != self.num_workers:
++                logger.info(
++                    f"Limiting workers {self.num_workers} -> {mps_cap} for shared MPS device (unified-memory safety)"
++                )
++            self.num_workers = mps_cap
+ 
+         self.timeout = self.cfg.exec.timeout
+         self.executor = ProcessPoolExecutor(max_workers=self.num_workers)
+@@ -1235,9 +1332,12 @@ class ParallelAgent:
              code = extract_code(completion_text)
              nl_text = extract_text_up_to_code(completion_text)
  
@@ -1054,36 +1176,41 @@ index 3f0ae59..b9e2e3c 100644
              print("Plan + code extraction failed, retrying...")
              prompt["Parsing Feedback"] = (
                  "The code extraction failed. Make sure to use the format ```python ... ``` for the code blocks."
-@@ -1783,6 +1806,28 @@ class ParallelAgent:
-             # Convert result node to dict
-             print("Converting result to dict")
-             result_data = child_node.to_dict()
-+            # Truncate oversized stdout buffers before returning through the
-+            # multiprocessing pipe. A worker returning a multi-hundred-KB result
-+            # (e.g. a hyperparameter/width sweep that dumps every run's metrics to
-+            # stdout) can wedge the parent in future.result() — the classic large
-+            # object pipe deadlock. Metrics live separately in result_data["metric"],
-+            # so trimming the raw terminal capture is lossless for downstream use.
-+            _MAX_TERM = 20000  # chars retained (head+tail) per stdout field
-+            for _k in ("_term_out", "parse_term_out", "plot_term_out"):
-+                _v = result_data.get(_k)
-+                if isinstance(_v, str) and len(_v) > _MAX_TERM:
-+                    _h = _MAX_TERM // 2
-+                    result_data[_k] = (
-+                        _v[:_h]
-+                        + f"\n...[truncated {len(_v) - _MAX_TERM} chars]...\n"
-+                        + _v[-_h:]
-+                    )
-+                elif isinstance(_v, list) and sum(len(str(x)) for x in _v) > _MAX_TERM:
-+                    result_data[_k] = (
-+                        _v[:50]
-+                        + [f"...[truncated {len(_v) - 100} lines]..."]
-+                        + _v[-50:]
-+                    )
+@@ -1316,7 +1416,7 @@ class ParallelAgent:
+ 
+         for future in futures:
+             try:
+-                result_data = future.result(timeout=self.timeout)
++                result_data = _read_worker_result(future.result(timeout=self.timeout))
+                 result_node = Node.from_dict(result_data, self.journal)
+                 print(f"Parent node id: {result_node.parent.id}")
+                 print(f"Sanity check: actual parent node id: {node.id}")
+@@ -1443,6 +1543,12 @@ class ParallelAgent:
+         if gpu_id is not None:
+             os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+             logger.info(f"Process {process_id} assigned to GPU {gpu_id}")
++        elif mps_available():
++            # Apple MPS is a single shared device with no CUDA_VISIBLE_DEVICES
++            # analogue — don't blank CVD (some code reads that as "no GPU").
++            # Enable CPU fallback for ops MPS doesn't implement.
++            os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
++            logger.info(f"Process {process_id} running on Apple MPS")
+         else:
+             os.environ["CUDA_VISIBLE_DEVICES"] = ""
+             logger.info(f"Process {process_id} running on CPU")
+@@ -1786,7 +1892,10 @@ class ParallelAgent:
              print(f"Result data keys: {result_data.keys()}")
              print(f"Result data size: {len(str(result_data))} chars")
              print("Returning result")
-@@ -2148,8 +2193,40 @@ class ParallelAgent:
+-            return result_data
++            # Spill to disk; return only a small path handle so the large result
++            # (code + metric + parse buffers) never crosses the pool pipe and
++            # wedges the parent in future.result(). Parent calls _read_worker_result.
++            return _spill_worker_result(result_data)
+ 
+         except Exception as e:
+             print(f"Worker process error: {str(e)}")
+@@ -2148,8 +2257,40 @@ class ParallelAgent:
          print("Waiting for results")
          for i, future in enumerate(futures):
              try:
@@ -1101,7 +1228,7 @@ index 3f0ae59..b9e2e3c 100644
 +                # never made it into journal.nodes).
 +                try:
 +                    print("About to get result from future")
-+                    result_data = future.result(timeout=self.timeout)
++                    result_data = _read_worker_result(future.result(timeout=self.timeout))
 +                except TimeoutError:
 +                    print("Worker process timed out, skipping this node")
 +                    logger.error("Worker process timed out, couldn't get the result")
@@ -1126,7 +1253,7 @@ index 3f0ae59..b9e2e3c 100644
                  if "metric" in result_data:
                      print(f"metric type: {type(result_data['metric'])}")
                      print(f"metric contents: {result_data['metric']}")
-@@ -2168,17 +2245,6 @@ class ParallelAgent:
+@@ -2168,17 +2309,6 @@ class ParallelAgent:
                  # Add node to journal's list and assign its step number
                  self.journal.append(result_node)
                  print("Added result node to journal")
